@@ -1,6 +1,15 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { CartItem, PurchasedItem, User, Event } from '@/types';
 
+export type OrderStatus = 'pending' | 'sent_to_bar' | 'ready' | 'delivered';
+
+export interface OrderItem extends PurchasedItem {
+  status: OrderStatus;
+  sentAt?: string;
+  readyAt?: string;
+  deliveredAt?: string;
+}
+
 interface AppContextType {
   user: User | null;
   setUser: (user: User | null) => void;
@@ -9,9 +18,9 @@ interface AppContextType {
   removeFromCart: (itemId: string) => void;
   updateCartQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
-  purchasedItems: PurchasedItem[];
+  purchasedItems: OrderItem[];
   addPurchasedItems: (items: PurchasedItem[]) => void;
-  markItemAsUsed: (purchaseId: string) => void;
+  updateItemStatus: (purchaseId: string, status: OrderStatus) => void;
   currentEvent: Event | null;
   setCurrentEvent: (event: Event | null) => void;
   hasEventAccess: boolean;
@@ -23,7 +32,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [purchasedItems, setPurchasedItems] = useState<PurchasedItem[]>([]);
+  const [purchasedItems, setPurchasedItems] = useState<OrderItem[]>([]);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [hasEventAccess, setHasEventAccess] = useState(false);
 
@@ -58,12 +67,26 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const clearCart = () => setCart([]);
 
   const addPurchasedItems = (items: PurchasedItem[]) => {
-    setPurchasedItems(prev => [...prev, ...items]);
+    const orderItems: OrderItem[] = items.map(item => ({
+      ...item,
+      status: 'pending' as OrderStatus,
+    }));
+    setPurchasedItems(prev => [...prev, ...orderItems]);
   };
 
-  const markItemAsUsed = (purchaseId: string) => {
+  const updateItemStatus = (purchaseId: string, status: OrderStatus) => {
     setPurchasedItems(prev => 
-      prev.map(i => i.purchaseId === purchaseId ? { ...i, used: true } : i)
+      prev.map(item => {
+        if (item.purchaseId !== purchaseId) return item;
+        
+        const updates: Partial<OrderItem> = { status };
+        
+        if (status === 'sent_to_bar') updates.sentAt = new Date().toISOString();
+        if (status === 'ready') updates.readyAt = new Date().toISOString();
+        if (status === 'delivered') updates.deliveredAt = new Date().toISOString();
+        
+        return { ...item, ...updates };
+      })
     );
   };
 
@@ -78,7 +101,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       clearCart,
       purchasedItems,
       addPurchasedItems,
-      markItemAsUsed,
+      updateItemStatus,
       currentEvent,
       setCurrentEvent,
       hasEventAccess,

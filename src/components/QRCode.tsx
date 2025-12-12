@@ -1,14 +1,15 @@
 import { useMemo } from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Send, Package } from 'lucide-react';
 
 interface QRCodeProps {
   value: string;
   size?: number;
   itemName?: string;
   itemPrice?: number;
+  type: 'order' | 'delivery';
 }
 
-const QRCode = ({ value, size = 200, itemName, itemPrice }: QRCodeProps) => {
+const QRCode = ({ value, size = 180, itemName, itemPrice, type }: QRCodeProps) => {
   const pattern = useMemo(() => {
     const grid: boolean[][] = [];
     const gridSize = 25;
@@ -60,23 +61,48 @@ const QRCode = ({ value, size = 200, itemName, itemPrice }: QRCodeProps) => {
   }, [value]);
 
   const cellSize = size / 25;
+  
+  const isOrder = type === 'order';
+  const bgColor = isOrder ? 'from-blue-500 to-cyan-500' : 'from-primary to-accent';
+  const iconBg = isOrder ? 'bg-blue-500' : 'bg-primary';
 
   return (
     <div className="flex flex-col items-center">
-      {/* Item info header */}
+      {/* Type badge */}
+      <div className={`mb-3 px-4 py-1.5 rounded-full bg-gradient-to-r ${bgColor} text-primary-foreground text-xs font-semibold uppercase tracking-wider flex items-center gap-2`}>
+        {isOrder ? (
+          <>
+            <Send className="w-3 h-3" />
+            QR de Pedido
+          </>
+        ) : (
+          <>
+            <Package className="w-3 h-3" />
+            QR de Entrega
+          </>
+        )}
+      </div>
+
+      {/* Item info */}
       {itemName && (
-        <div className="mb-4 text-center">
-          <p className="text-lg font-semibold text-foreground">{itemName}</p>
+        <div className="mb-3 text-center">
+          <p className="text-base font-semibold text-foreground">{itemName}</p>
           {itemPrice && (
-            <p className="text-primary font-bold">R$ {itemPrice.toFixed(2)}</p>
+            <p className={`font-bold ${isOrder ? 'text-blue-400' : 'text-primary'}`}>
+              R$ {itemPrice.toFixed(2)}
+            </p>
           )}
         </div>
       )}
       
       {/* QR Code */}
       <div 
-        className="bg-foreground rounded-2xl p-4 shadow-[0_0_40px_hsl(38_92%_50%_/_0.3)] relative"
-        style={{ width: size + 32, height: size + 32 }}
+        className={`bg-foreground rounded-2xl p-3 relative ${
+          isOrder 
+            ? 'shadow-[0_0_30px_hsl(200_100%_50%_/_0.3)]' 
+            : 'shadow-[0_0_30px_hsl(38_92%_50%_/_0.3)]'
+        }`}
+        style={{ width: size + 24, height: size + 24 }}
       >
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           {pattern.map((row, i) =>
@@ -95,24 +121,37 @@ const QRCode = ({ value, size = 200, itemName, itemPrice }: QRCodeProps) => {
           )}
         </svg>
         
-        {/* Center logo */}
+        {/* Center icon */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center shadow-lg">
-            <span className="text-xl font-display font-bold text-primary-foreground">N</span>
+          <div className={`w-10 h-10 rounded-lg ${iconBg} flex items-center justify-center shadow-lg`}>
+            {isOrder ? (
+              <Send className="w-5 h-5 text-white" />
+            ) : (
+              <CheckCircle2 className="w-5 h-5 text-primary-foreground" />
+            )}
           </div>
         </div>
       </div>
 
-      {/* Confirmation badge */}
-      <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-        <CheckCircle2 className="w-4 h-4 text-green-500" />
-        <span>Válido para retirada</span>
+      {/* Status text */}
+      <div className={`mt-3 flex items-center gap-2 text-xs ${isOrder ? 'text-blue-400' : 'text-green-400'}`}>
+        {isOrder ? (
+          <>
+            <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+            <span>Aguardando leitura do bar</span>
+          </>
+        ) : (
+          <>
+            <CheckCircle2 className="w-3 h-3" />
+            <span>Pronto para retirada</span>
+          </>
+        )}
       </div>
 
       {/* Code display */}
-      <div className="mt-2 px-4 py-2 bg-secondary rounded-lg">
-        <p className="text-xs font-mono text-muted-foreground tracking-wider">
-          {value.slice(0, 8).toUpperCase()}...{value.slice(-4).toUpperCase()}
+      <div className="mt-2 px-3 py-1.5 bg-secondary rounded-lg">
+        <p className="text-[10px] font-mono text-muted-foreground tracking-wider">
+          {value.slice(0, 6).toUpperCase()}...{value.slice(-4).toUpperCase()}
         </p>
       </div>
     </div>
