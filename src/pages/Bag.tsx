@@ -1,16 +1,84 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '@/contexts/AppContext';
+import { useApp, OrderStatus } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Trash2, ShoppingBag, QrCode, X, Minus, Plus } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  Trash2, 
+  ShoppingBag, 
+  QrCode, 
+  X, 
+  Minus, 
+  Plus,
+  Send,
+  Clock,
+  CheckCircle2,
+  Package
+} from 'lucide-react';
 import QRCodeComponent from '@/components/QRCode';
+import { toast } from 'sonner';
+
+const statusLabels: Record<OrderStatus, string> = {
+  pending: 'Aguardando envio',
+  sent_to_bar: 'Enviado ao bar',
+  ready: 'Pronto para retirar',
+  delivered: 'Entregue',
+};
+
+const statusColors: Record<OrderStatus, string> = {
+  pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+  sent_to_bar: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  ready: 'bg-green-500/20 text-green-400 border-green-500/30',
+  delivered: 'bg-muted text-muted-foreground border-border',
+};
 
 const Bag = () => {
   const navigate = useNavigate();
-  const { cart, purchasedItems, updateCartQuantity, removeFromCart, markItemAsUsed } = useApp();
-  const [selectedQR, setSelectedQR] = useState<string | null>(null);
+  const { cart, purchasedItems, updateCartQuantity, removeFromCart, updateItemStatus } = useApp();
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [qrType, setQrType] = useState<'order' | 'delivery'>('order');
 
   const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  const selectedPurchase = purchasedItems.find(i => i.purchaseId === selectedItem);
+
+  const handleShowOrderQR = (purchaseId: string) => {
+    setQrType('order');
+    setSelectedItem(purchaseId);
+  };
+
+  const handleShowDeliveryQR = (purchaseId: string) => {
+    setQrType('delivery');
+    setSelectedItem(purchaseId);
+  };
+
+  const handleSendToBar = () => {
+    if (!selectedItem) return;
+    updateItemStatus(selectedItem, 'sent_to_bar');
+    toast.success('Pedido enviado ao bar!');
+    setSelectedItem(null);
+    
+    // Simulate bar preparing the order
+    setTimeout(() => {
+      updateItemStatus(selectedItem, 'ready');
+      toast.success('Seu pedido está pronto para retirada!');
+    }, 3000);
+  };
+
+  const handleConfirmDelivery = () => {
+    if (!selectedItem) return;
+    updateItemStatus(selectedItem, 'delivered');
+    toast.success('Entrega confirmada! Aproveite!');
+    setSelectedItem(null);
+  };
+
+  const getStatusIcon = (status: OrderStatus) => {
+    switch (status) {
+      case 'pending': return <Clock className="w-4 h-4" />;
+      case 'sent_to_bar': return <Send className="w-4 h-4" />;
+      case 'ready': return <Package className="w-4 h-4" />;
+      case 'delivered': return <CheckCircle2 className="w-4 h-4" />;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background pb-8">
@@ -26,7 +94,7 @@ const Bag = () => {
           </Button>
           <div>
             <h1 className="text-xl font-display font-bold text-foreground">Minha Sacola</h1>
-            <p className="text-sm text-muted-foreground">Carrinho e itens comprados</p>
+            <p className="text-sm text-muted-foreground">Carrinho e pedidos</p>
           </div>
         </div>
       </header>
@@ -106,13 +174,13 @@ const Bag = () => {
         <section>
           <h2 className="text-lg font-display font-semibold text-foreground mb-4 flex items-center gap-2">
             <QrCode className="w-5 h-5 text-primary" />
-            Itens Comprados
+            Meus Pedidos
           </h2>
 
           {purchasedItems.length === 0 ? (
             <div className="glass rounded-2xl p-8 text-center">
               <ShoppingBag className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">Nenhum item comprado ainda</p>
+              <p className="text-muted-foreground">Nenhum pedido ainda</p>
               <Button 
                 variant="outline" 
                 className="mt-4"
@@ -126,13 +194,10 @@ const Bag = () => {
               {purchasedItems.map((item, index) => (
                 <div 
                   key={item.purchaseId}
-                  className={`glass rounded-xl p-4 cursor-pointer transition-all duration-300 animate-slide-up ${
-                    item.used 
-                      ? 'opacity-50 border-border' 
-                      : 'hover:border-primary/50 hover:shadow-[0_0_20px_hsl(38_92%_50%_/_0.2)]'
+                  className={`glass rounded-xl p-4 transition-all duration-300 animate-slide-up ${
+                    item.status === 'delivered' ? 'opacity-60' : ''
                   }`}
                   style={{ animationDelay: `${index * 0.05}s` }}
-                  onClick={() => !item.used && setSelectedQR(item.purchaseId)}
                 >
                   <div className="flex items-center gap-4">
                     <img 
@@ -142,18 +207,50 @@ const Bag = () => {
                     />
                     <div className="flex-1">
                       <h3 className="font-semibold text-foreground">{item.name}</h3>
-                      <p className="text-xs text-muted-foreground">{item.description}</p>
-                      <p className="text-sm text-primary font-medium mt-1">R$ {item.price.toFixed(2)}</p>
+                      <p className="text-sm text-primary font-medium">R$ {item.price.toFixed(2)}</p>
+                      
+                      {/* Status badge */}
+                      <div className={`inline-flex items-center gap-1.5 mt-2 px-2 py-1 rounded-full text-xs border ${statusColors[item.status]}`}>
+                        {getStatusIcon(item.status)}
+                        {statusLabels[item.status]}
+                      </div>
                     </div>
-                    <div className="text-center">
-                      {item.used ? (
-                        <span className="text-xs text-muted-foreground px-2 py-1 bg-muted rounded-full">
-                          Utilizado
-                        </span>
-                      ) : (
-                        <div className="w-12 h-12 rounded-lg bg-foreground/10 flex items-center justify-center">
-                          <QrCode className="w-6 h-6 text-primary" />
+
+                    {/* Action buttons based on status */}
+                    <div className="flex flex-col gap-2">
+                      {item.status === 'pending' && (
+                        <Button 
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleShowOrderQR(item.purchaseId)}
+                          className="bg-blue-500 hover:bg-blue-600"
+                        >
+                          <Send className="w-4 h-4 mr-1" />
+                          Enviar
+                        </Button>
+                      )}
+                      
+                      {item.status === 'sent_to_bar' && (
+                        <div className="flex items-center gap-2 text-blue-400">
+                          <div className="w-3 h-3 rounded-full bg-blue-400 animate-pulse" />
+                          <span className="text-xs">Preparando...</span>
                         </div>
+                      )}
+                      
+                      {item.status === 'ready' && (
+                        <Button 
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleShowDeliveryQR(item.purchaseId)}
+                          className="bg-green-500 hover:bg-green-600"
+                        >
+                          <Package className="w-4 h-4 mr-1" />
+                          Retirar
+                        </Button>
+                      )}
+                      
+                      {item.status === 'delivered' && (
+                        <CheckCircle2 className="w-6 h-6 text-muted-foreground" />
                       )}
                     </div>
                   </div>
@@ -162,69 +259,104 @@ const Bag = () => {
             </div>
           )}
         </section>
+
+        {/* Legend */}
+        {purchasedItems.length > 0 && (
+          <div className="mt-8 glass rounded-xl p-4">
+            <h3 className="text-sm font-semibold text-foreground mb-3">Como funciona:</h3>
+            <div className="space-y-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded bg-blue-500/20 flex items-center justify-center">
+                  <Send className="w-3 h-3 text-blue-400" />
+                </div>
+                <span><strong>QR de Pedido:</strong> Bar escaneia para receber seu pedido</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded bg-green-500/20 flex items-center justify-center">
+                  <Package className="w-3 h-3 text-green-400" />
+                </div>
+                <span><strong>QR de Entrega:</strong> Confirma retirada e dá baixa no estoque</span>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* QR Code Modal */}
-      {selectedQR && (
+      {selectedItem && selectedPurchase && (
         <div 
           className="fixed inset-0 z-50 bg-background/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => setSelectedQR(null)}
+          onClick={() => setSelectedItem(null)}
         >
-        <div 
-          className="glass rounded-3xl p-6 max-w-sm w-full animate-scale-in relative"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Button 
-            variant="ghost" 
-            size="icon"
-            className="absolute top-4 right-4 z-10"
-            onClick={() => setSelectedQR(null)}
+          <div 
+            className="glass rounded-3xl p-6 max-w-sm w-full animate-scale-in relative"
+            onClick={(e) => e.stopPropagation()}
           >
-            <X className="w-5 h-5" />
-          </Button>
-
-          {/* Header with delivery confirmation */}
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center animate-pulse">
-              <QrCode className="w-8 h-8 text-primary" />
-            </div>
-            <h2 className="text-xl font-display font-semibold text-foreground mb-1">
-              Confirmação de Entrega
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Apresente ao bar para retirar seu pedido
-            </p>
-          </div>
-
-          {/* QR Code with item info */}
-          {(() => {
-            const item = purchasedItems.find(i => i.purchaseId === selectedQR);
-            return (
-              <QRCodeComponent 
-                value={selectedQR} 
-                itemName={item?.name}
-                itemPrice={item?.price}
-              />
-            );
-          })()}
-
-          {/* Instructions */}
-          <div className="mt-6 p-4 bg-secondary/50 rounded-xl">
-            <p className="text-xs text-muted-foreground text-center">
-              O bar irá escanear este código para confirmar a entrega e dar baixa no seu pedido
-            </p>
-          </div>
-
             <Button 
-              variant="destructive" 
-              size="full" 
-              className="mt-6"
-              onClick={() => {
-                markItemAsUsed(selectedQR);
-                setSelectedQR(null);
-              }}
+              variant="ghost" 
+              size="icon"
+              className="absolute top-4 right-4 z-10"
+              onClick={() => setSelectedItem(null)}
             >
-              Marcar como Utilizado
+              <X className="w-5 h-5" />
+            </Button>
+
+            {/* Header */}
+            <div className="text-center mb-6">
+              <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
+                qrType === 'order' ? 'bg-blue-500/20' : 'bg-green-500/20'
+              }`}>
+                {qrType === 'order' ? (
+                  <Send className="w-8 h-8 text-blue-400 animate-pulse" />
+                ) : (
+                  <Package className="w-8 h-8 text-green-400 animate-pulse" />
+                )}
+              </div>
+              <h2 className="text-xl font-display font-semibold text-foreground mb-1">
+                {qrType === 'order' ? 'Enviar Pedido' : 'Confirmar Entrega'}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {qrType === 'order' 
+                  ? 'Apresente ao bar para enviar seu pedido' 
+                  : 'Bar escaneia para confirmar a entrega'}
+              </p>
+            </div>
+
+            {/* QR Code */}
+            <QRCodeComponent 
+              value={`${qrType}-${selectedItem}`} 
+              itemName={selectedPurchase.name}
+              itemPrice={selectedPurchase.price}
+              type={qrType}
+            />
+
+            {/* Instructions */}
+            <div className="mt-6 p-4 bg-secondary/50 rounded-xl">
+              <p className="text-xs text-muted-foreground text-center">
+                {qrType === 'order'
+                  ? 'O bar irá escanear este código para receber e preparar seu pedido'
+                  : 'Ao escanear, o item será dado baixa no estoque e marcado como entregue'}
+              </p>
+            </div>
+
+            {/* Action Button */}
+            <Button 
+              variant={qrType === 'order' ? 'default' : 'default'}
+              size="full" 
+              className={`mt-4 ${qrType === 'order' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'}`}
+              onClick={qrType === 'order' ? handleSendToBar : handleConfirmDelivery}
+            >
+              {qrType === 'order' ? (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Simular Leitura do Bar
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                  Confirmar Entrega
+                </>
+              )}
             </Button>
           </div>
         </div>
