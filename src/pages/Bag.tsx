@@ -170,33 +170,50 @@ const Bag = () => {
           className="fixed inset-0 z-50 bg-background/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setSelectedQR(null)}
         >
-          <div 
-            className="glass rounded-3xl p-8 max-w-sm w-full animate-scale-in"
-            onClick={(e) => e.stopPropagation()}
+        <div 
+          className="glass rounded-3xl p-6 max-w-sm w-full animate-scale-in relative"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="absolute top-4 right-4 z-10"
+            onClick={() => setSelectedQR(null)}
           >
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="absolute top-4 right-4"
-              onClick={() => setSelectedQR(null)}
-            >
-              <X className="w-5 h-5" />
-            </Button>
+            <X className="w-5 h-5" />
+          </Button>
 
-            <div className="text-center mb-6">
-              <h2 className="text-xl font-display font-semibold text-foreground mb-2">
-                Apresente ao Bar
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Mostre este QR Code para retirar seu item
-              </p>
+          {/* Header with delivery confirmation */}
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center animate-pulse">
+              <QrCode className="w-8 h-8 text-primary" />
             </div>
-
-            <QRCodeComponent value={selectedQR} />
-
-            <p className="text-xs text-center text-muted-foreground mt-4">
-              Código: {selectedQR}
+            <h2 className="text-xl font-display font-semibold text-foreground mb-1">
+              Confirmação de Entrega
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Apresente ao bar para retirar seu pedido
             </p>
+          </div>
+
+          {/* QR Code with item info */}
+          {(() => {
+            const item = purchasedItems.find(i => i.purchaseId === selectedQR);
+            return (
+              <QRCodeComponent 
+                value={selectedQR} 
+                itemName={item?.name}
+                itemPrice={item?.price}
+              />
+            );
+          })()}
+
+          {/* Instructions */}
+          <div className="mt-6 p-4 bg-secondary/50 rounded-xl">
+            <p className="text-xs text-muted-foreground text-center">
+              O bar irá escanear este código para confirmar a entrega e dar baixa no seu pedido
+            </p>
+          </div>
 
             <Button 
               variant="destructive" 
