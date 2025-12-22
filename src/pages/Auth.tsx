@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { Apple, Chrome, Facebook, Instagram, Mail, ArrowLeft, Building2, PartyPopper, ShoppingBag } from 'lucide-react';
+import { Chrome, Facebook, ArrowLeft, Building2, PartyPopper, ShoppingBag, Mail, Lock, User, ArrowRight } from 'lucide-react';
 import nightpassLogo from '@/assets/nightpass-logo.png';
 
 type AuthMode = 'select-type' | 'login' | 'signup';
@@ -34,29 +34,29 @@ const Auth = () => {
     }
   }, [user, loading, navigate]);
 
-  const getRoleLabel = (role: UserRole) => {
-    switch (role) {
-      case 'customer': return 'Cliente';
-      case 'bar': return 'Estabelecimento';
-      case 'event_organizer': return 'Organizador de Eventos';
-    }
-  };
-
-  const getRoleDescription = (role: UserRole) => {
-    switch (role) {
-      case 'customer': return 'Compre ingressos e acesse eventos';
-      case 'bar': return 'Gerencie seu bar ou restaurante';
-      case 'event_organizer': return 'Crie e gerencie seus eventos';
-    }
-  };
-
-  const getRoleIcon = (role: UserRole) => {
-    switch (role) {
-      case 'customer': return <ShoppingBag className="w-8 h-8" />;
-      case 'bar': return <Building2 className="w-8 h-8" />;
-      case 'event_organizer': return <PartyPopper className="w-8 h-8" />;
-    }
-  };
+  const roles: { role: UserRole; label: string; description: string; icon: React.ReactNode; emoji: string }[] = [
+    { 
+      role: 'customer', 
+      label: 'Cliente', 
+      description: 'Compre ingressos e acesse eventos',
+      icon: <ShoppingBag className="w-6 h-6" />,
+      emoji: '🎫'
+    },
+    { 
+      role: 'bar', 
+      label: 'Estabelecimento', 
+      description: 'Gerencie seu bar ou restaurante',
+      icon: <Building2 className="w-6 h-6" />,
+      emoji: '🍸'
+    },
+    { 
+      role: 'event_organizer', 
+      label: 'Organizador', 
+      description: 'Crie e gerencie seus eventos',
+      icon: <PartyPopper className="w-6 h-6" />,
+      emoji: '🎉'
+    },
+  ];
 
   const handleSelectRole = (role: UserRole) => {
     setSelectedRole(role);
@@ -68,7 +68,6 @@ const Auth = () => {
     setIsSubmitting(true);
 
     try {
-      // Validate inputs
       emailSchema.parse(email);
       passwordSchema.parse(password);
       
@@ -141,9 +140,7 @@ const Auth = () => {
   };
 
   const handleBack = () => {
-    if (mode === 'login') {
-      setMode('select-type');
-    } else if (mode === 'signup') {
+    if (mode === 'login' || mode === 'signup') {
       setMode('select-type');
     } else {
       navigate('/');
@@ -153,236 +150,263 @@ const Auth = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-primary">Carregando...</div>
+        <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
+  const selectedRoleData = roles.find(r => r.role === selectedRole);
+
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden flex flex-col">
-      {/* Background gradient effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-secondary/20" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-3xl" />
-      
-      {/* Header */}
-      <header className="relative z-10 p-4">
-        <Button variant="ghost" size="icon" onClick={handleBack}>
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-      </header>
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-primary/5" />
+        <div 
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full"
+          style={{
+            background: 'radial-gradient(circle, hsl(38 92% 50% / 0.08) 0%, transparent 70%)',
+          }}
+        />
+      </div>
 
       {/* Content */}
-      <div className="relative z-10 flex-1 flex flex-col items-center px-6 py-8">
-        {/* Logo */}
-        <div className="mb-8">
-          <img 
-            src={nightpassLogo} 
-            alt="NightPass Logo" 
-            className="w-48 h-auto object-contain"
-            style={{ 
-              mixBlendMode: 'lighten',
-              filter: 'drop-shadow(0 0 20px hsl(38 92% 50% / 0.4))'
-            }}
-          />
+      <div className="relative z-10 min-h-screen flex flex-col">
+        {/* Header */}
+        <header className="p-4 flex items-center">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleBack}
+            className="rounded-full hover:bg-primary/10"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+        </header>
+
+        {/* Main */}
+        <div className="flex-1 flex flex-col items-center px-6 pb-8">
+          {/* Logo */}
+          <div className="mb-8">
+            <img 
+              src={nightpassLogo} 
+              alt="NightPass" 
+              className="w-40 h-auto object-contain"
+              style={{ mixBlendMode: 'lighten', filter: 'drop-shadow(0 0 15px hsl(38 92% 50% / 0.3))' }}
+            />
+          </div>
+
+          {/* Select Role Mode */}
+          {mode === 'select-type' && (
+            <div className="w-full max-w-sm space-y-6 animate-fade-in">
+              <div className="text-center mb-8">
+                <h1 className="text-3xl font-bold text-foreground mb-2">
+                  Como você quer usar?
+                </h1>
+                <p className="text-muted-foreground">
+                  Escolha seu tipo de conta
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                {roles.map((item, index) => (
+                  <button
+                    key={item.role}
+                    onClick={() => handleSelectRole(item.role)}
+                    className="w-full group animate-slide-up"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    <div className="glass rounded-2xl p-5 flex items-center gap-4 hover:border-primary/50 transition-all duration-300">
+                      <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                        {item.emoji}
+                      </div>
+                      <div className="text-left flex-1">
+                        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                          {item.label}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {item.description}
+                        </p>
+                      </div>
+                      <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="relative py-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border/30" />
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="bg-background px-4 text-sm text-muted-foreground">já tem conta?</span>
+                </div>
+              </div>
+
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="w-full h-14 rounded-2xl border-border/50 hover:border-primary/50"
+                onClick={() => setMode('login')}
+              >
+                <Mail className="w-5 h-5 mr-2" />
+                Entrar com Email
+              </Button>
+            </div>
+          )}
+
+          {/* Login/Signup Form */}
+          {(mode === 'login' || mode === 'signup') && (
+            <div className="w-full max-w-sm space-y-6 animate-fade-in">
+              <div className="text-center mb-6">
+                {mode === 'signup' && selectedRoleData && (
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm mb-4">
+                    <span>{selectedRoleData.emoji}</span>
+                    <span>{selectedRoleData.label}</span>
+                  </div>
+                )}
+                <h1 className="text-3xl font-bold text-foreground mb-2">
+                  {mode === 'login' ? 'Bem-vindo de volta' : 'Criar conta'}
+                </h1>
+                <p className="text-muted-foreground">
+                  {mode === 'login' 
+                    ? 'Entre com suas credenciais' 
+                    : 'Preencha os dados abaixo'}
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {mode === 'signup' && (
+                  <div className="space-y-2 animate-slide-up">
+                    <Label htmlFor="fullName" className="text-muted-foreground">Nome completo</Label>
+                    <div className="relative">
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <Input
+                        id="fullName"
+                        type="text"
+                        placeholder="Seu nome"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        className="h-14 pl-12 rounded-2xl bg-secondary/30 border-border/50 focus:border-primary/50"
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-2 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                  <Label htmlFor="email" className="text-muted-foreground">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="seu@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="h-14 pl-12 rounded-2xl bg-secondary/30 border-border/50 focus:border-primary/50"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                  <Label htmlFor="password" className="text-muted-foreground">Senha</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="h-14 pl-12 rounded-2xl bg-secondary/30 border-border/50 focus:border-primary/50"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  className="w-full h-14 rounded-2xl text-lg font-semibold mt-6 bg-gradient-to-r from-primary to-accent animate-slide-up"
+                  style={{ animationDelay: '0.3s' }}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    mode === 'login' ? 'Entrar' : 'Criar conta'
+                  )}
+                </Button>
+              </form>
+
+              <div className="relative py-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border/30" />
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="bg-background px-4 text-sm text-muted-foreground">ou</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  className="h-14 rounded-2xl border-border/50 hover:border-primary/50"
+                  onClick={handleGoogleLogin}
+                >
+                  <Chrome className="w-5 h-5 mr-2" />
+                  Google
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  className="h-14 rounded-2xl border-border/50 hover:border-primary/50"
+                  onClick={() => toast({ title: 'Em breve', description: 'Login com Facebook em breve.' })}
+                >
+                  <Facebook className="w-5 h-5 mr-2" />
+                  Facebook
+                </Button>
+              </div>
+
+              <p className="text-center text-sm text-muted-foreground pt-4">
+                {mode === 'login' ? (
+                  <>
+                    Não tem conta?{' '}
+                    <button 
+                      onClick={() => setMode('select-type')} 
+                      className="text-primary hover:underline font-medium"
+                    >
+                      Criar conta
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    Já tem conta?{' '}
+                    <button 
+                      onClick={() => setMode('login')} 
+                      className="text-primary hover:underline font-medium"
+                    >
+                      Entrar
+                    </button>
+                  </>
+                )}
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Select Role Mode */}
-        {mode === 'select-type' && (
-          <div className="w-full max-w-sm space-y-6 animate-fade-in">
-            <div className="text-center mb-8">
-              <h1 className="text-2xl font-display font-bold text-foreground mb-2">
-                Bem-vindo ao NightPass
-              </h1>
-              <p className="text-muted-foreground">
-                Escolha como você quer usar o app
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              {(['customer', 'bar', 'event_organizer'] as UserRole[]).map((role) => (
-                <button
-                  key={role}
-                  onClick={() => handleSelectRole(role)}
-                  className="w-full glass rounded-2xl p-4 flex items-center gap-4 hover:border-primary/50 transition-all duration-300 group"
-                >
-                  <div className="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                    {getRoleIcon(role)}
-                  </div>
-                  <div className="text-left flex-1">
-                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                      {getRoleLabel(role)}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {getRoleDescription(role)}
-                    </p>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <div className="relative py-4">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border/50" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-4 text-muted-foreground">já tem conta?</span>
-              </div>
-            </div>
-
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="w-full h-14 rounded-xl"
-              onClick={() => setMode('login')}
-            >
-              <Mail className="w-5 h-5 mr-2" />
-              Entrar com Email
-            </Button>
-          </div>
-        )}
-
-        {/* Login/Signup Form */}
-        {(mode === 'login' || mode === 'signup') && (
-          <div className="w-full max-w-sm space-y-6 animate-fade-in">
-            <div className="text-center mb-6">
-              <h1 className="text-2xl font-display font-bold text-foreground mb-2">
-                {mode === 'login' ? 'Entrar' : `Criar conta como ${getRoleLabel(selectedRole)}`}
-              </h1>
-              <p className="text-muted-foreground">
-                {mode === 'login' 
-                  ? 'Entre com suas credenciais' 
-                  : 'Preencha os dados para criar sua conta'}
-              </p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {mode === 'signup' && (
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Nome completo</Label>
-                  <Input
-                    id="fullName"
-                    type="text"
-                    placeholder="Seu nome"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="h-12 rounded-xl bg-secondary/50 border-border/50"
-                    required
-                  />
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-12 rounded-xl bg-secondary/50 border-border/50"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="h-12 rounded-xl bg-secondary/50 border-border/50"
-                  required
-                />
-              </div>
-
-              <Button 
-                type="submit" 
-                size="lg" 
-                className="w-full h-14 rounded-xl"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Aguarde...' : (mode === 'login' ? 'Entrar' : 'Criar conta')}
-              </Button>
-            </form>
-
-            <div className="relative py-4">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border/50" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-4 text-muted-foreground">ou continue com</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-4 gap-3">
-              <Button 
-                variant="glass" 
-                size="icon" 
-                className="h-14 rounded-xl hover:border-primary/50"
-                onClick={handleGoogleLogin}
-              >
-                <Chrome className="w-6 h-6" />
-              </Button>
-              <Button 
-                variant="glass" 
-                size="icon" 
-                className="h-14 rounded-xl hover:border-primary/50"
-                onClick={() => toast({ title: 'Em breve', description: 'Login com Apple em breve.' })}
-              >
-                <Apple className="w-6 h-6" />
-              </Button>
-              <Button 
-                variant="glass" 
-                size="icon" 
-                className="h-14 rounded-xl hover:border-primary/50"
-                onClick={() => toast({ title: 'Em breve', description: 'Login com Facebook em breve.' })}
-              >
-                <Facebook className="w-6 h-6" />
-              </Button>
-              <Button 
-                variant="glass" 
-                size="icon" 
-                className="h-14 rounded-xl hover:border-primary/50"
-                onClick={() => toast({ title: 'Em breve', description: 'Login com Instagram em breve.' })}
-              >
-                <Instagram className="w-6 h-6" />
-              </Button>
-            </div>
-
-            <p className="text-center text-sm text-muted-foreground">
-              {mode === 'login' ? (
-                <>
-                  Não tem conta?{' '}
-                  <button 
-                    onClick={() => setMode('select-type')} 
-                    className="text-primary hover:underline"
-                  >
-                    Criar conta
-                  </button>
-                </>
-              ) : (
-                <>
-                  Já tem conta?{' '}
-                  <button 
-                    onClick={() => setMode('login')} 
-                    className="text-primary hover:underline"
-                  >
-                    Entrar
-                  </button>
-                </>
-              )}
-            </p>
-          </div>
-        )}
-
-        {/* Terms */}
-        <p className="text-center text-xs text-muted-foreground mt-8 max-w-xs">
-          Ao continuar, você concorda com nossos{' '}
-          <span className="text-primary hover:underline cursor-pointer">Termos de Uso</span> e{' '}
-          <span className="text-primary hover:underline cursor-pointer">Política de Privacidade</span>
-        </p>
+        {/* Footer */}
+        <div className="pb-6 px-6 text-center">
+          <p className="text-xs text-muted-foreground/60">
+            Ao continuar, você concorda com nossos{' '}
+            <span className="text-primary/80 hover:text-primary cursor-pointer">Termos</span>
+            {' '}e{' '}
+            <span className="text-primary/80 hover:text-primary cursor-pointer">Privacidade</span>
+          </p>
+        </div>
       </div>
     </div>
   );
