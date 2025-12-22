@@ -20,12 +20,19 @@ const Login = () => {
       {/* Content */}
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12">
         {/* Logo and title */}
-        <div className="text-center mb-12 animate-fade-in">
-          <img 
-            src={nightpassLogo} 
-            alt="NightPass Logo" 
-            className="w-48 h-48 mx-auto object-contain mix-blend-screen drop-shadow-[0_0_40px_hsl(38_92%_50%_/_0.5)]"
-          />
+        <div className="text-center mb-8 animate-fade-in">
+          <div className="relative inline-block">
+            <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
+            <img 
+              src={nightpassLogo} 
+              alt="NightPass Logo" 
+              className="relative w-56 h-auto object-contain brightness-110"
+              style={{ 
+                mixBlendMode: 'lighten',
+                filter: 'drop-shadow(0 0 30px hsl(38 92% 50% / 0.4))'
+              }}
+            />
+          </div>
         </div>
 
         {/* Login buttons */}
