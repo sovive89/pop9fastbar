@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Sora:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -84,12 +84,12 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', sans-serif;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Outfit', sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Sora', sans-serif;
   }
 }
 
@@ -141,5 +141,47 @@
 
   .animate-pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-shift 4s ease infinite;
+  }
+
+  @keyframes slide-up {
+    0% { transform: translateY(20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.5s ease-out forwards;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% { 
+      filter: drop-shadow(0 0 20px hsl(38 92% 50% / 0.4)) drop-shadow(0 0 40px hsl(38 92% 50% / 0.2));
+    }
+    50% { 
+      filter: drop-shadow(0 0 30px hsl(38 92% 50% / 0.6)) drop-shadow(0 0 60px hsl(38 92% 50% / 0.3));
+    }
+  }
+
+  .animate-glow-pulse {
+    animation: glow-pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes border-glow {
+    0%, 100% { border-color: hsl(38 92% 50% / 0.3); }
+    50% { border-color: hsl(38 92% 50% / 0.6); }
+  }
+
+  .animate-border-glow {
+    animation: border-glow 2s ease-in-out infinite;
   }
 }
