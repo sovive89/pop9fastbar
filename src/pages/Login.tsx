@@ -20,11 +20,11 @@ const Login = () => {
       {/* Content */}
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12">
         {/* Logo and title */}
-        <div className="text-center mb-8 animate-fade-in">
+        <div className="text-center mb-12 animate-fade-in">
           <img 
             src={nightpassLogo} 
             alt="NightPass Logo" 
-            className="w-56 h-auto object-contain"
+            className="w-72 h-auto object-contain mx-auto"
           />
         </div>
 
