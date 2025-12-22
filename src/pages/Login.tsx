@@ -21,17 +21,11 @@ const Login = () => {
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12">
         {/* Logo and title */}
         <div className="text-center mb-8 animate-fade-in">
-          <div className="relative inline-block">
-            <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
-            <img 
-              src={nightpassLogo} 
-              alt="NightPass Logo" 
-              className="relative w-56 h-auto object-contain"
-              style={{ 
-                filter: 'drop-shadow(0 0 30px hsl(38 92% 50% / 0.4))'
-              }}
-            />
-          </div>
+          <img 
+            src={nightpassLogo} 
+            alt="NightPass Logo" 
+            className="w-56 h-auto object-contain"
+          />
         </div>
 
         {/* Login buttons */}
