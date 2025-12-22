@@ -45,9 +45,7 @@ const Header = ({
             src={nightpassLogo} 
             alt="NightPass" 
             className="h-10 w-auto object-contain cursor-pointer"
-            style={{ 
-              filter: 'drop-shadow(0 0 10px hsl(38 92% 50% / 0.3))'
-            }}
+            style={{ mixBlendMode: 'lighten' }}
             onClick={() => navigate('/eventos')}
           />
         )}
