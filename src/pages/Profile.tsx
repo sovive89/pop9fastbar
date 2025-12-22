@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
-import { ArrowLeft, User, Mail, Wallet, Calendar, MapPin, Settings, LogOut, CreditCard, Bell, Shield, HelpCircle } from 'lucide-react';
+import { User, Mail, Wallet, Calendar, MapPin, Settings, LogOut, CreditCard, Bell, Shield, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import Header from '@/components/Header';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -21,19 +22,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <header className="sticky top-0 z-50 glass border-b border-border/30">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => navigate(-1)}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-xl font-display font-bold text-foreground">Meu Perfil</h1>
-        </div>
-      </header>
+      <Header showBack title="Meu Perfil" />
 
       {/* Profile Card */}
       <main className="container mx-auto px-4 py-6">
