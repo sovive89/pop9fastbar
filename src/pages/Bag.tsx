@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useApp, OrderStatus } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
 import { 
-  ArrowLeft, 
   Trash2, 
   ShoppingBag, 
   QrCode, 
@@ -16,6 +15,7 @@ import {
   Package
 } from 'lucide-react';
 import QRCodeComponent from '@/components/QRCode';
+import Header from '@/components/Header';
 import { toast } from 'sonner';
 
 const statusLabels: Record<OrderStatus, string> = {
@@ -82,22 +82,7 @@ const Bag = () => {
 
   return (
     <div className="min-h-screen bg-background pb-8">
-      {/* Header */}
-      <header className="sticky top-0 z-50 glass border-b border-border/30">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => navigate(-1)}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-xl font-display font-bold text-foreground">Minha Sacola</h1>
-            <p className="text-sm text-muted-foreground">Carrinho e pedidos</p>
-          </div>
-        </div>
-      </header>
+      <Header showBack title="Minha Sacola" subtitle="Carrinho e pedidos" />
 
       <main className="container mx-auto px-4 py-6">
         {/* Cart Section */}
