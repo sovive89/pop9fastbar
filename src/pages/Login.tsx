@@ -17,7 +17,15 @@ const Login = () => {
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12">
         {/* Logo and title */}
         <div className="text-center mb-12 animate-fade-in">
-          <img src={nightpassLogo} alt="NightPass Logo" className="w-72 h-auto mx-auto object-scale-down border-0 border-muted-foreground border-none opacity-50 shadow rounded-full" />
+          <img 
+            src={nightpassLogo} 
+            alt="NightPass Logo" 
+            className="w-72 h-auto mx-auto object-contain"
+            style={{ 
+              mixBlendMode: 'lighten',
+              filter: 'drop-shadow(0 0 20px hsl(38 92% 50% / 0.4)) drop-shadow(0 0 40px hsl(38 92% 50% / 0.2))'
+            }}
+          />
         </div>
 
         {/* Login buttons */}

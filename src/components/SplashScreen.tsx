@@ -59,7 +59,10 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
             src={nightpassLogo} 
             alt="NightPass Logo" 
             className="w-64 h-auto object-contain"
-            style={{ mixBlendMode: 'lighten' }}
+            style={{ 
+              mixBlendMode: 'lighten',
+              filter: 'drop-shadow(0 0 30px hsl(38 92% 50% / 0.5)) drop-shadow(0 0 60px hsl(38 92% 50% / 0.3))'
+            }}
           />
         </div>
 
