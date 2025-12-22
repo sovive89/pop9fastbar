@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { events } from '@/data/mockData';
@@ -7,25 +7,83 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Header from '@/components/Header';
+import FilterSheet, { FilterState } from '@/components/FilterSheet';
 
 const Events = () => {
   const navigate = useNavigate();
   const { cart } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterOpen, setFilterOpen] = useState(false);
+
+  // Extract unique locations and categories
+  const locations = useMemo(() => 
+    [...new Set(events.map(e => e.location))],
+    []
+  );
+
+  const categories = useMemo(() => 
+    ['Eletrônica', 'Jazz', 'Sertanejo', 'Rock', 'Pop', 'Funk'],
+    []
+  );
+
+  const maxPrice = useMemo(() => 
+    Math.max(...events.filter(e => e.type === 'event').map(e => e.price), 200),
+    []
+  );
+
+  const [filters, setFilters] = useState<FilterState>({
+    location: null,
+    dateFrom: null,
+    dateTo: null,
+    priceRange: [0, maxPrice],
+    category: null,
+  });
 
   const cartItemsCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
-  const filteredEvents = events.filter(e => 
-    e.type === 'event' && 
-    (e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-     e.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-     e.location.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const activeFiltersCount = [
+    filters.location,
+    filters.dateFrom,
+    filters.dateTo,
+    filters.priceRange[0] > 0 || filters.priceRange[1] < maxPrice,
+    filters.category,
+  ].filter(Boolean).length;
+
+  const filteredEvents = events.filter(e => {
+    if (e.type !== 'event') return false;
+    
+    // Search query
+    const matchesSearch = 
+      e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      e.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      e.location.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (!matchesSearch) return false;
+
+    // Location filter
+    if (filters.location && e.location !== filters.location) return false;
+
+    // Date filters
+    if (filters.dateFrom && e.date) {
+      const eventDate = new Date(e.date);
+      if (eventDate < filters.dateFrom) return false;
+    }
+    if (filters.dateTo && e.date) {
+      const eventDate = new Date(e.date);
+      if (eventDate > filters.dateTo) return false;
+    }
+
+    // Price filter
+    if (e.price < filters.priceRange[0] || e.price > filters.priceRange[1]) return false;
+
+    return true;
+  });
 
   const filteredEstablishments = events.filter(e => 
     e.type === 'establishment' && 
     (e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-     e.location.toLowerCase().includes(searchQuery.toLowerCase()))
+     e.location.toLowerCase().includes(searchQuery.toLowerCase())) &&
+    (!filters.location || e.location === filters.location)
   );
 
   return (
@@ -63,11 +121,28 @@ const Events = () => {
           <Button 
             variant="glass" 
             size="icon" 
-            className="h-12 w-12 rounded-xl border-border/50 hover:border-primary/50"
+            className="h-12 w-12 rounded-xl border-border/50 hover:border-primary/50 relative"
+            onClick={() => setFilterOpen(true)}
           >
             <SlidersHorizontal className="w-5 h-5" />
+            {activeFiltersCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-semibold">
+                {activeFiltersCount}
+              </span>
+            )}
           </Button>
         </div>
+
+        {/* Filter Sheet */}
+        <FilterSheet
+          open={filterOpen}
+          onOpenChange={setFilterOpen}
+          filters={filters}
+          onFiltersChange={setFilters}
+          locations={locations}
+          categories={categories}
+          maxPrice={maxPrice}
+        />
 
         {/* Section: Events */}
         <section className="mb-8">
