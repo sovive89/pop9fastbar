@@ -85,7 +85,7 @@ const Dashboard = () => {
                   <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
                     <stat.icon className="w-4 h-4 text-primary" />
                   </div>
-                  <span className="text-xs text-emerald-400 font-medium">{stat.trend}</span>
+                  <span className="text-xs text-primary/70 font-medium">{stat.trend}</span>
                 </div>
                 <p className="text-xl font-bold text-foreground">{stat.value}</p>
                 <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
