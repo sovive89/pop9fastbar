@@ -29,7 +29,7 @@ const Auth = () => {
 
   useEffect(() => {
     if (user && !loading) {
-      navigate('/eventos');
+      navigate('/dashboard');
     }
   }, [user, loading, navigate]);
 
