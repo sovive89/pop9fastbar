@@ -38,13 +38,14 @@ const SessionsPage = () => {
 
   const createSession = async () => {
     if (!clientName.trim()) { toast({ title: 'Informe o nome do cliente', variant: 'destructive' }); return; }
-    const { data: session, error } = await supabase.from('sessions').insert({ table_number: tableNumber || null, opened_by: user?.id }).select().single();
+    if (clientPhone.replace(/\D/g, '').length < 10) { toast({ title: 'Informe um celular válido', variant: 'destructive' }); return; }
+    const { data: session, error } = await supabase.from('sessions').insert({ opened_by: user?.id }).select().single();
     if (error || !session) { toast({ title: 'Erro ao criar comanda', variant: 'destructive' }); return; }
-    await supabase.from('session_clients').insert({ session_id: session.id, client_name: clientName.trim() });
+    await supabase.from('session_clients').insert({ session_id: session.id, client_name: clientName.trim(), client_phone: clientPhone.replace(/\D/g, '') } as any);
     toast({ title: 'Comanda aberta!' });
     setShowNew(false);
-    setTableNumber('');
     setClientName('');
+    setClientPhone('');
     fetchSessions();
   };
 
