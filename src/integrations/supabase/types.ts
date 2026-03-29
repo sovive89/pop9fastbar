@@ -14,6 +14,220 @@ export type Database = {
   }
   public: {
     Tables: {
+      menu_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      menu_item_ingredients: {
+        Row: {
+          extra_price: number
+          id: string
+          is_default: boolean
+          is_removable: boolean
+          menu_item_id: string
+          name: string
+        }
+        Insert: {
+          extra_price?: number
+          id?: string
+          is_default?: boolean
+          is_removable?: boolean
+          menu_item_id: string
+          name: string
+        }
+        Update: {
+          extra_price?: number
+          id?: string
+          is_default?: boolean
+          is_removable?: boolean
+          menu_item_id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_item_ingredients_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_items: {
+        Row: {
+          category_id: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          price: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "menu_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_items: {
+        Row: {
+          added_ingredients: string[] | null
+          confirmed_at: string | null
+          created_at: string
+          id: string
+          menu_item_id: string
+          notes: string | null
+          order_id: string
+          quantity: number
+          removed_ingredients: string[] | null
+          status: string
+          token: string
+          unit_price: number
+        }
+        Insert: {
+          added_ingredients?: string[] | null
+          confirmed_at?: string | null
+          created_at?: string
+          id?: string
+          menu_item_id: string
+          notes?: string | null
+          order_id: string
+          quantity?: number
+          removed_ingredients?: string[] | null
+          status?: string
+          token?: string
+          unit_price: number
+        }
+        Update: {
+          added_ingredients?: string[] | null
+          confirmed_at?: string | null
+          created_at?: string
+          id?: string
+          menu_item_id?: string
+          notes?: string | null
+          order_id?: string
+          quantity?: number
+          removed_ingredients?: string[] | null
+          status?: string
+          token?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          session_client_id: string
+          session_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          session_client_id: string
+          session_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          session_client_id?: string
+          session_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_session_client_id_fkey"
+            columns: ["session_client_id"]
+            isOneToOne: false
+            referencedRelation: "session_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           address: string | null
@@ -59,6 +273,65 @@ export type Database = {
           state?: string | null
           updated_at?: string
           zip_code?: string | null
+        }
+        Relationships: []
+      }
+      session_clients: {
+        Row: {
+          client_name: string
+          client_token: string
+          id: string
+          joined_at: string
+          session_id: string
+        }
+        Insert: {
+          client_name: string
+          client_token?: string
+          id?: string
+          joined_at?: string
+          session_id: string
+        }
+        Update: {
+          client_name?: string
+          client_token?: string
+          id?: string
+          joined_at?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_clients_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sessions: {
+        Row: {
+          closed_at: string | null
+          id: string
+          opened_at: string
+          opened_by: string | null
+          status: string
+          table_number: string | null
+        }
+        Insert: {
+          closed_at?: string | null
+          id?: string
+          opened_at?: string
+          opened_by?: string | null
+          status?: string
+          table_number?: string | null
+        }
+        Update: {
+          closed_at?: string | null
+          id?: string
+          opened_at?: string
+          opened_by?: string | null
+          status?: string
+          table_number?: string | null
         }
         Relationships: []
       }
