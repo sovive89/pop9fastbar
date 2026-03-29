@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import {
   ClipboardList, Users, LogOut, Clock, Plus, X, ChefHat,
-  Copy, UserPlus, XCircle, Settings, ShoppingBag, Flame,
-  ChevronDown, ChevronUp, User, DollarSign, RotateCcw
+  Copy, UserPlus, XCircle, Settings, ShoppingBag, Flame
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
