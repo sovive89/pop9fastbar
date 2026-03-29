@@ -101,7 +101,7 @@ const SessionsPage = () => {
             <div className="p-4 border-b border-border/20 flex items-center justify-between">
               <div>
                 <p className="font-bold text-foreground">
-                  {session.table_number ? `Mesa ${session.table_number}` : `Comanda #${session.id.slice(0, 6).toUpperCase()}`}
+                  Comanda #{session.id.slice(0, 6).toUpperCase()}
                 </p>
                 <p className="text-xs text-muted-foreground">{new Date(session.opened_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
               </div>
