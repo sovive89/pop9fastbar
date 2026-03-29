@@ -1,12 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 import {
   ArrowLeft, BarChart3, DollarSign, ShoppingBag,
-  Package, TrendingUp, Hash, Flame, Calendar
+  Package, TrendingUp, Hash, Flame, CalendarIcon
 } from 'lucide-react';
 import pop9Logo from '@/assets/pop9-logo.png';
 
