@@ -12,6 +12,7 @@ import KitchenView from "./pages/staff/KitchenView";
 import SessionsPage from "./pages/staff/SessionsPage";
 import AdminPage from "./pages/staff/AdminPage";
 import AdminMenuPage from "./pages/staff/AdminMenuPage";
+import ReportsPage from "./pages/staff/ReportsPage";
 import ClientOrder from "./pages/client/ClientOrder";
 import NotFound from "./pages/NotFound";
 
