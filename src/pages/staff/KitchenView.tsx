@@ -1,8 +1,8 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Clock, CheckCircle2, AlertCircle, Volume2, VolumeX } from 'lucide-react';
+import { Clock, CheckCircle2, Volume2, VolumeX, BellRing } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Order, OrderItem, MenuItem } from '@/types';
 
@@ -10,8 +10,72 @@ const KitchenView = () => {
   const { toast } = useToast();
   const [orders, setOrders] = useState<(Order & { items: (OrderItem & { menu_item: MenuItem })[] })[]>([]);
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const prevCountRef = useRef(0);
+  const [alertActive, setAlertActive] = useState(false);
+  const [newOrderCount, setNewOrderCount] = useState(0);
+  const alarmRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const prevOrderIdsRef = useRef<Set<string>>(new Set());
+  const isFirstLoad = useRef(true);
+
+  const stopAlarm = useCallback(() => {
+    if (alarmRef.current) {
+      clearInterval(alarmRef.current);
+      alarmRef.current = null;
+    }
+    setAlertActive(false);
+    setNewOrderCount(0);
+  }, []);
+
+  const playAlarmBeep = useCallback(() => {
+    try {
+      const ctx = new AudioContext();
+      // First tone
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.frequency.value = 880;
+      osc1.type = 'square';
+      gain1.gain.value = 0.5;
+      osc1.start();
+      osc1.stop(ctx.currentTime + 0.15);
+      // Second tone
+      setTimeout(() => {
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.frequency.value = 1100;
+        osc2.type = 'square';
+        gain2.gain.value = 0.5;
+        osc2.start();
+        osc2.stop(ctx.currentTime + 0.15);
+      }, 180);
+      // Third tone (higher)
+      setTimeout(() => {
+        const osc3 = ctx.createOscillator();
+        const gain3 = ctx.createGain();
+        osc3.connect(gain3);
+        gain3.connect(ctx.destination);
+        osc3.frequency.value = 1320;
+        osc3.type = 'square';
+        gain3.gain.value = 0.5;
+        osc3.start();
+        osc3.stop(ctx.currentTime + 0.25);
+      }, 360);
+    } catch {}
+  }, []);
+
+  const startAlarm = useCallback((count: number) => {
+    setAlertActive(true);
+    setNewOrderCount(count);
+    // Play immediately
+    playAlarmBeep();
+    // Repeat every 3 seconds until dismissed
+    if (alarmRef.current) clearInterval(alarmRef.current);
+    alarmRef.current = setInterval(() => {
+      playAlarmBeep();
+    }, 3000);
+  }, [playAlarmBeep]);
 
   const fetchOrders = async () => {
     const { data } = await supabase
@@ -24,38 +88,21 @@ const KitchenView = () => {
         ...o,
         items: (o.items || []).map((i: any) => ({ ...i, menu_item: i.menu_item })),
       }));
-      if (mapped.length > prevCountRef.current && prevCountRef.current > 0 && soundEnabled) {
-        playNotification();
+      
+      const currentIds = new Set(mapped.map(o => o.id));
+      if (isFirstLoad.current) {
+        prevOrderIdsRef.current = currentIds;
+        isFirstLoad.current = false;
+      } else {
+        const newIds = [...currentIds].filter(id => !prevOrderIdsRef.current.has(id));
+        if (newIds.length > 0 && soundEnabled) {
+          startAlarm(newIds.length);
+        }
+        prevOrderIdsRef.current = currentIds;
       }
-      prevCountRef.current = mapped.length;
+      
       setOrders(mapped as any);
     }
-  };
-
-  const playNotification = () => {
-    try {
-      const ctx = new AudioContext();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.value = 880;
-      osc.type = 'sine';
-      gain.gain.value = 0.3;
-      osc.start();
-      osc.stop(ctx.currentTime + 0.2);
-      setTimeout(() => {
-        const osc2 = ctx.createOscillator();
-        const gain2 = ctx.createGain();
-        osc2.connect(gain2);
-        gain2.connect(ctx.destination);
-        osc2.frequency.value = 1100;
-        osc2.type = 'sine';
-        gain2.gain.value = 0.3;
-        osc2.start();
-        osc2.stop(ctx.currentTime + 0.3);
-      }, 200);
-    } catch {}
   };
 
   useEffect(() => {
@@ -66,17 +113,20 @@ const KitchenView = () => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'order_items' }, () => fetchOrders())
       .subscribe();
     const interval = setInterval(fetchOrders, 10000);
-    return () => { supabase.removeChannel(channel); clearInterval(interval); };
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+      if (alarmRef.current) clearInterval(alarmRef.current);
+    };
   }, [soundEnabled]);
 
-  const confirmItem = async (itemId: string, token: string) => {
+  const confirmItem = async (itemId: string) => {
     const { data: existing } = await supabase.from('order_items').select('status').eq('id', itemId).single();
     if (existing?.status === 'confirmed') {
       toast({ title: 'Já confirmado', description: 'Este item já foi confirmado anteriormente.' });
       return;
     }
     await supabase.from('order_items').update({ status: 'confirmed', confirmed_at: new Date().toISOString() }).eq('id', itemId);
-    // Check if all items in order are confirmed
     const { data: item } = await supabase.from('order_items').select('order_id').eq('id', itemId).single();
     if (item) {
       const { data: allItems } = await supabase.from('order_items').select('status').eq('order_id', item.order_id);
@@ -116,6 +166,23 @@ const KitchenView = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Flashing alert banner */}
+      {alertActive && (
+        <div
+          className="fixed inset-x-0 top-0 z-[200] cursor-pointer animate-pulse"
+          onClick={stopAlarm}
+        >
+          <div className="bg-destructive text-destructive-foreground py-4 px-6 flex items-center justify-center gap-3 shadow-lg">
+            <BellRing className="w-6 h-6 animate-bounce" />
+            <span className="font-display font-bold text-lg">
+              🔔 {newOrderCount} novo{newOrderCount !== 1 ? 's' : ''} pedido{newOrderCount !== 1 ? 's' : ''}!
+            </span>
+            <span className="text-sm opacity-80">Toque para silenciar</span>
+            <BellRing className="w-6 h-6 animate-bounce" />
+          </div>
+        </div>
+      )}
+
       <header className="sticky top-0 z-50 glass border-b border-border/30">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <h1 className="font-display font-bold text-xl text-foreground">🍳 Cozinha / Balcão</h1>
@@ -131,14 +198,14 @@ const KitchenView = () => {
       <main className="container mx-auto px-4 py-4">
         {orders.length === 0 ? (
           <div className="text-center py-20">
-            <ClockIcon className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+            <Clock className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
             <p className="text-muted-foreground text-lg">Nenhum pedido no momento</p>
             <p className="text-muted-foreground/70 text-sm mt-1">Novos pedidos aparecerão aqui em tempo real</p>
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {orders.map(order => (
-              <div key={order.id} className={`glass rounded-2xl overflow-hidden animate-slide-up ${order.status === 'pending' ? 'ring-2 ring-yellow-500/50 animate-pulse-glow' : ''}`}>
+              <div key={order.id} className={`glass rounded-2xl overflow-hidden animate-slide-up ${order.status === 'pending' ? 'ring-2 ring-yellow-500/50' : ''}`}>
                 <div className="p-4 border-b border-border/20 flex items-center justify-between">
                   <div>
                     <p className="font-bold text-foreground">Pedido #{order.id.slice(0, 6).toUpperCase()}</p>
@@ -156,14 +223,14 @@ const KitchenView = () => {
                       <div className="flex-1">
                         <p className="text-sm font-medium text-foreground">{item.quantity}x {item.menu_item?.name || 'Item'}</p>
                         {item.notes && <p className="text-xs text-muted-foreground">📝 {item.notes}</p>}
-                        {item.removed_ingredients?.length > 0 && <p className="text-xs text-destructive">✕ {item.removed_ingredients.join(', ')}</p>}
-                        {item.added_ingredients?.length > 0 && <p className="text-xs text-green-400">+ {item.added_ingredients.join(', ')}</p>}
+                        {item.removed_ingredients && item.removed_ingredients.length > 0 && <p className="text-xs text-destructive">✕ {item.removed_ingredients.join(', ')}</p>}
+                        {item.added_ingredients && item.added_ingredients.length > 0 && <p className="text-xs text-green-400">+ {item.added_ingredients.join(', ')}</p>}
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge className={`text-[10px] ${statusColors[item.status]}`}>{statusLabels[item.status]}</Badge>
                         {item.status !== 'confirmed' && item.status !== 'cancelled' && (
                           <Button size="sm" variant="outline" className="h-7 text-xs border-primary/30 text-primary hover:bg-primary/10"
-                            onClick={() => confirmItem(item.id, item.token)}>
+                            onClick={() => confirmItem(item.id)}>
                             <CheckCircle2 className="w-3 h-3 mr-1" /> OK
                           </Button>
                         )}
@@ -194,7 +261,5 @@ const KitchenView = () => {
     </div>
   );
 };
-
-const ClockIcon = Clock;
 
 export default KitchenView;
