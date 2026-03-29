@@ -30,6 +30,7 @@ const StaffDashboard = () => {
   const [clientPhone, setClientPhone] = useState('');
   const [creating, setCreating] = useState(false);
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
+  const [orderModal, setOrderModal] = useState<{ sessionId: string; clientId: string; clientName: string } | null>(null);
 
   const canManageSessions = role === 'admin' || role === 'attendant';
 
