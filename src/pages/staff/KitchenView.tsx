@@ -10,8 +10,11 @@ const KitchenView = () => {
   const { toast } = useToast();
   const [orders, setOrders] = useState<(Order & { items: (OrderItem & { menu_item: MenuItem })[] })[]>([]);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [alertActive, setAlertActive] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const alarmIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const prevCountRef = useRef(0);
+  const prevOrderIdsRef = useRef<Set<string>>(new Set());
 
   const fetchOrders = async () => {
     const { data } = await supabase
