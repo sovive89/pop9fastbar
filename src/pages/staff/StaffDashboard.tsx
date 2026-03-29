@@ -254,7 +254,7 @@ const StaffDashboard = () => {
                         {session.clients?.map(client => (
                           <div key={client.id} className="flex items-center justify-between">
                             <button
-                              onClick={() => navigate(`/order/${session.id}/${client.client_token}`)}
+                              onClick={() => setOrderModal({ sessionId: session.id, clientId: client.id, clientName: client.client_name })}
                               className="text-[10px] text-foreground hover:text-primary transition-colors truncate max-w-[60%]"
                             >
                               {client.client_name}
