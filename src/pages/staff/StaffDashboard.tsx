@@ -357,6 +357,17 @@ const StaffDashboard = () => {
           </>
         )}
       </main>
+
+      {/* Staff Order Modal */}
+      {orderModal && (
+        <StaffOrderModal
+          sessionId={orderModal.sessionId}
+          clientId={orderModal.clientId}
+          clientName={orderModal.clientName}
+          onClose={() => setOrderModal(null)}
+          onOrderCreated={() => { fetchAll(); fetchRecentOrders(); }}
+        />
+      )}
     </div>
   );
 };
