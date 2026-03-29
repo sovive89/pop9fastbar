@@ -16,7 +16,7 @@ import pop9Logo from '@/assets/pop9-logo.png';
 const StaffDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, profile, role, signOut } = useAuth();
+  const { user, role, signOut } = useAuth();
 
   const [tab, setTab] = useState<'comandas' | 'pedidos'>('comandas');
   const [activeSessions, setActiveSessions] = useState(0);

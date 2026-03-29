@@ -19,7 +19,6 @@ type AdminTab = 'menu' | 'categories' | 'users' | 'password';
 
 const AdminPage = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { role } = useAuth();
   const [activeTab, setActiveTab] = useState<AdminTab>('menu');
 
