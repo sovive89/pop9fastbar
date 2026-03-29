@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { Lock, User, ArrowLeft } from 'lucide-react';
+import { Lock, User } from 'lucide-react';
 import pop9Logo from '@/assets/pop9-logo.png';
 import type { AppRole } from '@/types';
 

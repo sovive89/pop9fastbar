@@ -22,8 +22,6 @@ const ClientOrderInner = () => {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showCart, setShowCart] = useState(false);
-  const [showOrders, setShowOrders] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
   const [view, setView] = useState<'menu' | 'cart' | 'orders'>('menu');
 
