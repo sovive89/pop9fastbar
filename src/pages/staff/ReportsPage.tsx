@@ -1,16 +1,20 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 import {
   ArrowLeft, BarChart3, DollarSign, ShoppingBag,
-  Package, TrendingUp, Hash, Flame, Calendar
+  Package, TrendingUp, Hash, Flame, CalendarIcon
 } from 'lucide-react';
 import pop9Logo from '@/assets/pop9-logo.png';
 
-type Period = 'today' | 'week' | 'month';
+type Period = 'today' | 'week' | 'month' | 'custom';
 
 interface OrderItemRow {
   quantity: number;
@@ -37,8 +41,12 @@ const ReportsPage = () => {
   const [orderCount, setOrderCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  const [customStart, setCustomStart] = useState<Date | undefined>();
+  const [customEnd, setCustomEnd] = useState<Date | undefined>();
+
   // Compute date range from period
   useEffect(() => {
+    if (period === 'custom') return; // custom dates managed by pickers
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0];
     if (period === 'today') {
@@ -56,6 +64,13 @@ const ReportsPage = () => {
       setEndDate(todayStr);
     }
   }, [period]);
+
+  // Sync custom date pickers
+  useEffect(() => {
+    if (period !== 'custom') return;
+    if (customStart) setStartDate(customStart.toISOString().split('T')[0]);
+    if (customEnd) setEndDate(customEnd.toISOString().split('T')[0]);
+  }, [customStart, customEnd, period]);
 
   // Fetch data when dates change
   useEffect(() => {
@@ -182,32 +197,86 @@ const ReportsPage = () => {
       <main className="max-w-5xl mx-auto px-4 py-4 space-y-4">
         {/* Period selector */}
         <div className="flex gap-2 flex-wrap">
-          {(['today', 'week', 'month'] as Period[]).map(p => (
+          {(['today', 'week', 'month', 'custom'] as Period[]).map(p => (
             <button
               key={p}
-              onClick={() => setPeriod(p)}
+              onClick={() => {
+                setPeriod(p);
+                if (p === 'custom' && !customStart) {
+                  setCustomStart(new Date());
+                  setCustomEnd(new Date());
+                }
+              }}
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
                 period === p
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'border-border/50 text-muted-foreground hover:text-foreground'
               }`}
             >
-              {p === 'today' ? 'Hoje' : p === 'week' ? 'Semana' : 'Mês'}
+              {p === 'today' ? 'Hoje' : p === 'week' ? 'Semana' : p === 'month' ? 'Mês' : 'Personalizado'}
             </button>
           ))}
         </div>
 
-        {/* Date range display */}
+        {/* Date range with pickers */}
         <div className="flex items-center gap-2 text-xs">
-          <div className="flex items-center gap-1.5 px-3 py-2 glass rounded-xl">
-            <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-foreground">{startDate.split('-').reverse().join('/')}</span>
-          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "gap-1.5 h-9 rounded-xl text-xs border-border/50",
+                  period !== 'custom' && "pointer-events-none opacity-70"
+                )}
+              >
+                <CalendarIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                {startDate ? startDate.split('-').reverse().join('/') : 'Início'}
+              </Button>
+            </PopoverTrigger>
+            {period === 'custom' && (
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={customStart}
+                  onSelect={(d) => { setCustomStart(d); if (d && customEnd && d > customEnd) setCustomEnd(d); }}
+                  disabled={(date) => date > new Date()}
+                  locale={ptBR}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            )}
+          </Popover>
+
           <span className="text-muted-foreground">até</span>
-          <div className="flex items-center gap-1.5 px-3 py-2 glass rounded-xl">
-            <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-foreground">{endDate.split('-').reverse().join('/')}</span>
-          </div>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "gap-1.5 h-9 rounded-xl text-xs border-border/50",
+                  period !== 'custom' && "pointer-events-none opacity-70"
+                )}
+              >
+                <CalendarIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                {endDate ? endDate.split('-').reverse().join('/') : 'Fim'}
+              </Button>
+            </PopoverTrigger>
+            {period === 'custom' && (
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={customEnd}
+                  onSelect={setCustomEnd}
+                  disabled={(date) => date > new Date() || (customStart ? date < customStart : false)}
+                  locale={ptBR}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            )}
+          </Popover>
         </div>
 
         {/* KPI Cards */}
