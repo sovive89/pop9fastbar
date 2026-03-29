@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import type { Session, SessionClient } from '@/types';
 import pop9Logo from '@/assets/pop9-logo.png';
+import StaffOrderModal from '@/components/StaffOrderModal';
 
 const StaffDashboard = () => {
   const navigate = useNavigate();
