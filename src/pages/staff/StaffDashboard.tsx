@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import {
   ClipboardList, LogOut, Clock, Plus, X, ChefHat,
   Copy, UserPlus, XCircle, Settings, ShoppingBag, Flame,
-  ChevronDown, ChevronUp, User, DollarSign, RotateCcw
+  ChevronDown, ChevronUp, User, DollarSign, RotateCcw, BarChart3
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
