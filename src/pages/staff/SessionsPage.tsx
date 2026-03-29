@@ -1,0 +1,132 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Users, ArrowLeft, X, QrCode } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import type { Session, SessionClient } from '@/types';
+
+const SessionsPage = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [sessions, setSessions] = useState<(Session & { clients: SessionClient[] })[]>([]);
+  const [showNew, setShowNew] = useState(false);
+  const [tableNumber, setTableNumber] = useState('');
+  const [clientName, setClientName] = useState('');
+
+  const fetchSessions = async () => {
+    const { data } = await supabase
+      .from('sessions')
+      .select('*, clients:session_clients(*)')
+      .eq('status', 'active')
+      .order('opened_at', { ascending: false });
+    if (data) setSessions(data as any);
+  };
+
+  useEffect(() => { fetchSessions(); }, []);
+
+  const createSession = async () => {
+    if (!clientName.trim()) { toast({ title: 'Informe o nome do cliente', variant: 'destructive' }); return; }
+    const { data: session, error } = await supabase.from('sessions').insert({ table_number: tableNumber || null, opened_by: user?.id }).select().single();
+    if (error || !session) { toast({ title: 'Erro ao criar comanda', variant: 'destructive' }); return; }
+    await supabase.from('session_clients').insert({ session_id: session.id, client_name: clientName.trim() });
+    toast({ title: 'Comanda aberta!' });
+    setShowNew(false);
+    setTableNumber('');
+    setClientName('');
+    fetchSessions();
+  };
+
+  const closeSession = async (id: string) => {
+    await supabase.from('sessions').update({ status: 'closed', closed_at: new Date().toISOString() }).eq('id', id);
+    toast({ title: 'Comanda encerrada' });
+    fetchSessions();
+  };
+
+  const addClient = async (sessionId: string) => {
+    const name = prompt('Nome do cliente:');
+    if (!name?.trim()) return;
+    await supabase.from('session_clients').insert({ session_id: sessionId, client_name: name.trim() });
+    fetchSessions();
+  };
+
+  const getClientLink = (sessionId: string, token: string) => {
+    return `${window.location.origin}/order/${sessionId}/${token}`;
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="sticky top-0 z-50 glass border-b border-border/30">
+        <div className="container mx-auto px-4 py-3 flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/staff')}><ArrowLeft className="w-5 h-5" /></Button>
+          <h1 className="font-display font-bold text-lg text-foreground flex-1">Comandas</h1>
+          <Button size="sm" onClick={() => setShowNew(true)} className="rounded-xl gap-1"><Plus className="w-4 h-4" /> Nova</Button>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-4 space-y-4">
+        {showNew && (
+          <div className="glass rounded-2xl p-4 space-y-3 animate-slide-up">
+            <h3 className="font-semibold text-foreground">Nova Comanda</h3>
+            <Input placeholder="Mesa (opcional)" value={tableNumber} onChange={e => setTableNumber(e.target.value)} className="rounded-xl bg-secondary/30" />
+            <Input placeholder="Nome do cliente *" value={clientName} onChange={e => setClientName(e.target.value)} className="rounded-xl bg-secondary/30" />
+            <div className="flex gap-2">
+              <Button onClick={createSession} className="flex-1 rounded-xl">Abrir</Button>
+              <Button variant="ghost" onClick={() => setShowNew(false)} className="rounded-xl"><X className="w-4 h-4" /></Button>
+            </div>
+          </div>
+        )}
+
+        {sessions.length === 0 && !showNew && (
+          <div className="text-center py-20">
+            <Users className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+            <p className="text-muted-foreground">Nenhuma comanda aberta</p>
+          </div>
+        )}
+
+        {sessions.map(session => (
+          <div key={session.id} className="glass rounded-2xl overflow-hidden animate-slide-up">
+            <div className="p-4 border-b border-border/20 flex items-center justify-between">
+              <div>
+                <p className="font-bold text-foreground">
+                  {session.table_number ? `Mesa ${session.table_number}` : `Comanda #${session.id.slice(0, 6).toUpperCase()}`}
+                </p>
+                <p className="text-xs text-muted-foreground">{new Date(session.opened_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+              </div>
+              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Ativa</Badge>
+            </div>
+
+            <div className="p-4 space-y-2">
+              {session.clients?.map(client => (
+                <div key={client.id} className="flex items-center justify-between bg-secondary/20 rounded-xl px-3 py-2">
+                  <span className="text-sm text-foreground">{client.client_name}</span>
+                  <Button size="sm" variant="ghost" className="h-7 text-xs text-primary" onClick={() => {
+                    navigator.clipboard.writeText(getClientLink(session.id, client.client_token));
+                    toast({ title: 'Link copiado!' });
+                  }}>
+                    <QrCode className="w-3 h-3 mr-1" /> Link
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-4 pt-0 flex gap-2">
+              <Button size="sm" variant="outline" className="flex-1 rounded-xl text-xs" onClick={() => addClient(session.id)}>
+                <Plus className="w-3 h-3 mr-1" /> Cliente
+              </Button>
+              <Button size="sm" variant="outline" className="flex-1 rounded-xl text-xs border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => closeSession(session.id)}>
+                Encerrar
+              </Button>
+            </div>
+          </div>
+        ))}
+      </main>
+    </div>
+  );
+};
+
+export default SessionsPage;
