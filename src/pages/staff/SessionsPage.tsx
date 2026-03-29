@@ -15,8 +15,15 @@ const SessionsPage = () => {
   const { user } = useAuth();
   const [sessions, setSessions] = useState<(Session & { clients: SessionClient[] })[]>([]);
   const [showNew, setShowNew] = useState(false);
-  const [tableNumber, setTableNumber] = useState('');
   const [clientName, setClientName] = useState('');
+  const [clientPhone, setClientPhone] = useState('');
+
+  const formatPhone = (val: string) => {
+    const digits = val.replace(/\D/g, '').slice(0, 11);
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  };
 
   const fetchSessions = async () => {
     const { data } = await supabase
