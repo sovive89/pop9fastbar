@@ -41,8 +41,12 @@ const ReportsPage = () => {
   const [orderCount, setOrderCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  const [customStart, setCustomStart] = useState<Date | undefined>();
+  const [customEnd, setCustomEnd] = useState<Date | undefined>();
+
   // Compute date range from period
   useEffect(() => {
+    if (period === 'custom') return; // custom dates managed by pickers
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0];
     if (period === 'today') {
@@ -60,6 +64,13 @@ const ReportsPage = () => {
       setEndDate(todayStr);
     }
   }, [period]);
+
+  // Sync custom date pickers
+  useEffect(() => {
+    if (period !== 'custom') return;
+    if (customStart) setStartDate(customStart.toISOString().split('T')[0]);
+    if (customEnd) setEndDate(customEnd.toISOString().split('T')[0]);
+  }, [customStart, customEnd, period]);
 
   // Fetch data when dates change
   useEffect(() => {
