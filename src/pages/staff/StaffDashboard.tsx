@@ -234,6 +234,8 @@ const StaffDashboard = () => {
                   const code = session.id.slice(0, 4).toUpperCase();
                   const clientCount = session.clients?.length || 0;
                   const timeStr = new Date(session.opened_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                  const elapsed = Math.floor((Date.now() - new Date(session.opened_at).getTime()) / 60000);
+                  const elapsedStr = elapsed < 60 ? `${elapsed}min` : `${Math.floor(elapsed / 60)}h${elapsed % 60 > 0 ? String(elapsed % 60).padStart(2, '0') : ''}`;
 
                   return (
                     <div
@@ -249,7 +251,11 @@ const StaffDashboard = () => {
                           <Users className="w-3 h-3 text-muted-foreground" />
                           <span className="text-xs text-muted-foreground">{clientCount}</span>
                         </div>
-                        <p className="text-[10px] text-muted-foreground mt-1">{timeStr}</p>
+                        <div className="flex items-center justify-center gap-1.5 mt-1">
+                          <Clock className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-[10px] text-muted-foreground">{timeStr}</span>
+                          <span className="text-[10px] text-primary font-medium">· {elapsedStr}</span>
+                        </div>
                       </div>
 
                       {/* Expand: clients */}
