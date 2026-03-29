@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import type { Session, SessionClient } from '@/types';
 import pop9Logo from '@/assets/pop9-logo.png';
+import StaffOrderModal from '@/components/StaffOrderModal';
 
 const StaffDashboard = () => {
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ const StaffDashboard = () => {
   const [clientPhone, setClientPhone] = useState('');
   const [creating, setCreating] = useState(false);
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
+  const [orderModal, setOrderModal] = useState<{ sessionId: string; clientId: string; clientName: string } | null>(null);
 
   const canManageSessions = role === 'admin' || role === 'attendant';
 
@@ -252,7 +254,7 @@ const StaffDashboard = () => {
                         {session.clients?.map(client => (
                           <div key={client.id} className="flex items-center justify-between">
                             <button
-                              onClick={() => navigate(`/order/${session.id}/${client.client_token}`)}
+                              onClick={() => setOrderModal({ sessionId: session.id, clientId: client.id, clientName: client.client_name })}
                               className="text-[10px] text-foreground hover:text-primary transition-colors truncate max-w-[60%]"
                             >
                               {client.client_name}
@@ -355,6 +357,17 @@ const StaffDashboard = () => {
           </>
         )}
       </main>
+
+      {/* Staff Order Modal */}
+      {orderModal && (
+        <StaffOrderModal
+          sessionId={orderModal.sessionId}
+          clientId={orderModal.clientId}
+          clientName={orderModal.clientName}
+          onClose={() => setOrderModal(null)}
+          onOrderCreated={() => { fetchAll(); fetchRecentOrders(); }}
+        />
+      )}
     </div>
   );
 };
