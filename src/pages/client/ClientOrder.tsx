@@ -5,7 +5,7 @@ import { useCart, CartProvider } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingBag, Search, Plus, Minus, X, Send, CheckCircle2, Clock, ChevronLeft } from 'lucide-react';
+import { ShoppingBag, Search, Plus, Minus, X, Send, CheckCircle2, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { MenuCategory, MenuItem, OrderItem } from '@/types';
 import QRCode from '@/components/QRCode';
