@@ -1,0 +1,1 @@
+ALTER TABLE public.session_clients ADD COLUMN client_phone text;
