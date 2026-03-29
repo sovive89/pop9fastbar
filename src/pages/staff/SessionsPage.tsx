@@ -80,8 +80,8 @@ const SessionsPage = () => {
         {showNew && (
           <div className="glass rounded-2xl p-4 space-y-3 animate-slide-up">
             <h3 className="font-semibold text-foreground">Nova Comanda</h3>
-            <Input placeholder="Mesa (opcional)" value={tableNumber} onChange={e => setTableNumber(e.target.value)} className="rounded-xl bg-secondary/30" />
-            <Input placeholder="Nome do cliente *" value={clientName} onChange={e => setClientName(e.target.value)} className="rounded-xl bg-secondary/30" />
+            <Input placeholder="Nome completo *" value={clientName} onChange={e => setClientName(e.target.value)} className="rounded-xl bg-secondary/30" />
+            <Input placeholder="(00) 00000-0000" value={clientPhone} onChange={e => setClientPhone(formatPhone(e.target.value))} type="tel" className="rounded-xl bg-secondary/30" />
             <div className="flex gap-2">
               <Button onClick={createSession} className="flex-1 rounded-xl">Abrir</Button>
               <Button variant="ghost" onClick={() => setShowNew(false)} className="rounded-xl"><X className="w-4 h-4" /></Button>

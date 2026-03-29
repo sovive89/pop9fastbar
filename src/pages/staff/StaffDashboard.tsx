@@ -250,9 +250,7 @@ const StaffDashboard = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {sessions.map((session, i) => {
                   const timeStr = new Date(session.opened_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                  const label = session.table_number
-                    ? `Mesa ${session.table_number}`
-                    : `#${session.id.slice(0, 6).toUpperCase()}`;
+                  const label = `Comanda #${session.id.slice(0, 6).toUpperCase()}`;
 
                   return (
                     <div
