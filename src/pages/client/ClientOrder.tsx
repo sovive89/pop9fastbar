@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingBag, Search, Plus, Minus, X, Send, CheckCircle2, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { MenuCategory, MenuItem, OrderItem } from '@/types';
+import type { MenuCategory, MenuItem } from '@/types';
 import QRCode from '@/components/QRCode';
 
 const ClientOrderInner = () => {
