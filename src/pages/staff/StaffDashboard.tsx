@@ -27,7 +27,6 @@ const StaffDashboard = () => {
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [creating, setCreating] = useState(false);
-  const [creating, setCreating] = useState(false);
 
   const canManageSessions = role === 'admin' || role === 'attendant';
 
