@@ -27,12 +27,23 @@ const ClientRegistration = () => {
   useState(() => {
     const validate = async () => {
       if (!sessionId) { setSessionValid(false); return; }
+      
+      // Check if there's a saved token for this session
+      const savedToken = localStorage.getItem(`client_token_${sessionId}`);
+      
       const { data } = await supabase
         .from('sessions')
         .select('status')
         .eq('id', sessionId)
         .maybeSingle();
-      setSessionValid(data?.status === 'active');
+      
+      const isActive = data?.status === 'active';
+      setSessionValid(isActive);
+
+      // If session is active and we have a saved token, redirect automatically
+      if (isActive && savedToken) {
+        navigate(`/order/${sessionId}/${savedToken}`, { replace: true });
+      }
     };
     validate();
   });
@@ -55,6 +66,8 @@ const ClientRegistration = () => {
       .maybeSingle();
 
     if (existing) {
+      // Save to local storage for persistence
+      localStorage.setItem(`client_token_${sessionId}`, existing.client_token);
       // Already registered, go directly to menu
       navigate(`/order/${sessionId}/${existing.client_token}`, { replace: true });
       return;
@@ -76,6 +89,8 @@ const ClientRegistration = () => {
       return;
     }
 
+    // Save to local storage for persistence
+    localStorage.setItem(`client_token_${sessionId}`, data.client_token);
     navigate(`/order/${sessionId}/${data.client_token}`, { replace: true });
   };
 
