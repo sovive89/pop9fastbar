@@ -65,6 +65,7 @@ const App = () => {
               <Route path="/staff/reports" element={<ProtectedRoute allowedRoles={['admin']}><ReportsPage /></ProtectedRoute>} />
 
               {/* Client routes (public, no auth) */}
+              <Route path="/order/:sessionId" element={<ClientRegistration />} />
               <Route path="/order/:sessionId/:clientToken" element={<ClientOrder />} />
 
               <Route path="*" element={<NotFound />} />
