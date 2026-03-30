@@ -6,33 +6,41 @@ Deno.serve(async () => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
+  const adminEmail = "ricardoferreiradonascimento89@gmail.com";
+  const adminPassword = "123456";
+
+  // Delete all existing users
   const { data: existingUsers } = await supabase.auth.admin.listUsers();
-  const existing = existingUsers?.users?.find(u => u.email === "admin@pop9.com");
-  
-  if (!existing) {
-    return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
+  if (existingUsers?.users) {
+    for (const user of existingUsers.users) {
+      await supabase.from("user_roles").delete().eq("user_id", user.id);
+      await supabase.from("profiles").delete().eq("id", user.id);
+      await supabase.auth.admin.deleteUser(user.id);
+    }
   }
 
-  // Update password and confirm email
-  const { data, error } = await supabase.auth.admin.updateUserById(existing.id, {
-    password: "admin123",
-    email_confirm: true
+  // Create admin user
+  const { data, error } = await supabase.auth.admin.createUser({
+    email: adminEmail,
+    password: adminPassword,
+    email_confirm: true,
+    user_metadata: { full_name: "Ricardo Ferreira" }
   });
 
   if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400 });
 
-  // Ensure profile exists
+  // Create profile
   await supabase.from("profiles").upsert({
-    id: existing.id,
-    email: "admin@pop9.com",
-    full_name: "Admin POP9"
+    id: data.user.id,
+    email: adminEmail,
+    full_name: "Ricardo Ferreira"
   });
 
-  // Ensure role exists
+  // Assign admin role
   await supabase.from("user_roles").upsert({
-    user_id: existing.id,
+    user_id: data.user.id,
     role: "admin"
   }, { onConflict: "user_id,role" });
 
-  return new Response(JSON.stringify({ success: true, userId: existing.id, confirmed: data.user.email_confirmed_at }));
+  return new Response(JSON.stringify({ success: true, userId: data.user.id }));
 });
