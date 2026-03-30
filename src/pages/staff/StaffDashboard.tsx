@@ -270,7 +270,7 @@ const StaffDashboard = () => {
             {/* Status counters */}
             <div className="flex gap-2 flex-wrap">
               <div className="flex items-center gap-2 px-3 py-1.5 bg-secondary/30 rounded-lg">
-                <div className="w-2 h-2 rounded-full bg-green-400" />
+                <div className="w-2 h-2 rounded-full bg-emerald-400" />
                 <span className="text-xs text-muted-foreground">Ativas: <span className="text-foreground font-semibold">{activeSessions}</span></span>
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 bg-secondary/30 rounded-lg">
@@ -285,8 +285,28 @@ const StaffDashboard = () => {
               )}
             </div>
 
+            {/* Active / Closed filter */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setSessionFilter('active')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  sessionFilter === 'active' ? 'bg-primary text-primary-foreground' : 'bg-secondary/40 text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Abertas ({activeSessions})
+              </button>
+              <button
+                onClick={() => setSessionFilter('closed')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  sessionFilter === 'closed' ? 'bg-primary text-primary-foreground' : 'bg-secondary/40 text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Encerradas ({closedToday})
+              </button>
+            </div>
+
             {/* New session button + form */}
-            {canManageSessions && (
+            {canManageSessions && sessionFilter === 'active' && (
               <>
                 {!showNewSession ? (
                   <Button onClick={() => setShowNewSession(true)} className="rounded-xl gap-1.5 h-10">
@@ -310,179 +330,248 @@ const StaffDashboard = () => {
               </>
             )}
 
-            {/* Comandas list - collapsible cards */}
-            {sessions.length === 0 && !showNewSession ? (
-              <div className="py-16 flex flex-col items-center justify-center">
-                <ClipboardList className="w-12 h-12 text-muted-foreground/20 mb-3" />
-                <p className="text-muted-foreground text-sm">Nenhuma comanda ativa</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {sessions.map((session, i) => {
-                  const code = session.id.slice(0, 4).toUpperCase();
-                  const clientCount = session.clients?.length || 0;
-                  const timeStr = new Date(session.opened_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                  const elapsed = Math.floor((Date.now() - new Date(session.opened_at).getTime()) / 60000);
-                  const elapsedStr = elapsed < 60 ? `${elapsed}min` : `${Math.floor(elapsed / 60)}h${elapsed % 60 > 0 ? String(elapsed % 60).padStart(2, '0') : ''}`;
-                  const isExpanded = expandedSession === session.id;
-                  const orders = sessionOrders[session.id] || [];
-                  const total = getSessionTotal(session.id);
-                  const itemCount = getSessionItemCount(session.id);
+            {/* Comandas list */}
+            {(() => {
+              const displaySessions = sessionFilter === 'active' ? sessions : closedSessions;
+              const isClosed = sessionFilter === 'closed';
 
-                  return (
-                    <div
-                      key={session.id}
-                      className="glass rounded-2xl border border-primary/30 overflow-hidden animate-slide-up transition-all"
-                      style={{ animationDelay: `${i * 0.03}s` }}
-                    >
-                      {/* Collapsed header - always visible */}
-                      <button
-                        onClick={() => toggleExpand(session.id)}
-                        className="w-full px-4 py-3 flex items-center gap-3 hover:bg-secondary/10 transition-colors"
+              if (displaySessions.length === 0 && !showNewSession) {
+                return (
+                  <div className="py-16 flex flex-col items-center justify-center">
+                    <ClipboardList className="w-12 h-12 text-muted-foreground/20 mb-3" />
+                    <p className="text-muted-foreground text-sm">
+                      {isClosed ? 'Nenhuma comanda encerrada hoje' : 'Nenhuma comanda ativa'}
+                    </p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="space-y-3">
+                  {displaySessions.map((session, i) => {
+                    const code = session.id.slice(0, 4).toUpperCase();
+                    const clientNames = session.clients?.map(c => c.client_name) || [];
+                    const timeStr = new Date(session.opened_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    const dateStr = new Date(session.opened_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                    const elapsed = Math.floor((Date.now() - new Date(session.opened_at).getTime()) / 60000);
+                    const elapsedStr = elapsed < 60 ? `${elapsed}min` : `${Math.floor(elapsed / 60)}h${elapsed % 60 > 0 ? String(elapsed % 60).padStart(2, '0') : ''}`;
+                    const isExpanded = expandedSession === session.id;
+                    const orders = sessionOrders[session.id] || [];
+                    const total = getSessionTotal(session.id);
+                    const itemCount = getSessionItemCount(session.id);
+
+                    // Build consumption summary for collapsed view
+                    const consumptionSummary: { name: string; qty: number; subtotal: number }[] = [];
+                    orders.filter(o => o.status !== 'cancelled').forEach(o => {
+                      o.items?.filter(it => it.status !== 'cancelled').forEach(it => {
+                        const existing = consumptionSummary.find(s => s.name === (it.menu_item?.name || 'Item'));
+                        if (existing) {
+                          existing.qty += it.quantity;
+                          existing.subtotal += it.quantity * Number(it.unit_price);
+                        } else {
+                          consumptionSummary.push({
+                            name: it.menu_item?.name || 'Item',
+                            qty: it.quantity,
+                            subtotal: it.quantity * Number(it.unit_price),
+                          });
+                        }
+                      });
+                    });
+
+                    return (
+                      <div
+                        key={session.id}
+                        className={`glass rounded-2xl border overflow-hidden animate-slide-up transition-all ${
+                          isClosed ? 'border-border/20 opacity-80' : 'border-primary/30'
+                        }`}
+                        style={{ animationDelay: `${i * 0.03}s` }}
                       >
-                        {/* Code badge */}
-                        <div className="w-12 h-12 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">
-                          <span className="font-display font-bold text-sm text-primary">{code}</span>
-                        </div>
-
-                        {/* Info */}
-                        <div className="flex-1 text-left min-w-0">
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1">
-                              <User className="w-4 h-4 text-muted-foreground" />
-                              <span className="text-sm font-medium text-foreground">{clientCount}</span>
+                        {/* Card header - always visible */}
+                        <button
+                          onClick={() => toggleExpand(session.id)}
+                          className="w-full px-4 py-3 text-left hover:bg-secondary/10 transition-colors"
+                        >
+                          <div className="flex items-start gap-3">
+                            {/* Code badge */}
+                            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
+                              isClosed ? 'bg-muted/30 border border-border/30' : 'bg-primary/15 border border-primary/30'
+                            }`}>
+                              <span className={`font-display font-bold text-xs ${isClosed ? 'text-muted-foreground' : 'text-primary'}`}>{code}</span>
                             </div>
-                            {sessionOrders[session.id] && (
-                              <span className="text-xs text-muted-foreground">· {itemCount} itens</span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            <Clock className="w-3 h-3 text-muted-foreground" />
-                            <span className="text-[11px] text-muted-foreground">{timeStr}</span>
-                            <span className="text-[11px] text-primary font-medium">· {elapsedStr}</span>
-                          </div>
-                        </div>
 
-                        {/* Total + chevron */}
-                        <div className="flex items-center gap-2 shrink-0">
-                          {sessionOrders[session.id] && total > 0 && (
-                            <div className="flex items-center gap-1 px-2 py-1 bg-primary/10 rounded-lg">
-                              <DollarSign className="w-3 h-3 text-primary" />
-                              <span className="text-xs font-bold text-primary">
-                                {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                              </span>
-                            </div>
-                          )}
-                          {isExpanded ? (
-                            <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                          )}
-                        </div>
-                      </button>
+                            {/* Main info */}
+                            <div className="flex-1 min-w-0">
+                              {/* Client names */}
+                              <p className="text-sm font-semibold text-foreground truncate">
+                                {clientNames.length > 0 ? clientNames.join(', ') : 'Sem clientes'}
+                              </p>
 
-                      {/* Expanded content */}
-                      {isExpanded && (
-                        <div className="border-t border-border/20 animate-slide-up">
-                          {/* Clients */}
-                          <div className="px-4 py-3 space-y-2">
-                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Clientes</p>
-                            {session.clients?.map(client => (
-                              <div key={client.id} className="flex items-center justify-between py-1">
-                                <button
-                                  onClick={() => setOrderModal({ sessionId: session.id, clientId: client.id, clientName: client.client_name })}
-                                  className="flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors"
-                                >
-                                  <User className="w-4 h-4 text-muted-foreground" />
-                                  <span className="truncate">{client.client_name}</span>
-                                </button>
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    onClick={() => setOrderModal({ sessionId: session.id, clientId: client.id, clientName: client.client_name })}
-                                    className="text-[10px] px-2 py-1 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors flex items-center gap-1"
-                                  >
-                                    <RotateCcw className="w-3 h-3" /> Pedir
-                                  </button>
-                                  <button
-                                    onClick={() => copyLink(session.id, client.client_token)}
-                                    className="text-muted-foreground hover:text-primary transition-colors"
-                                  >
-                                    <Copy className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
+                              {/* Time info */}
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <Clock className="w-3 h-3 text-muted-foreground shrink-0" />
+                                <span className="text-[11px] text-muted-foreground">{dateStr} {timeStr}</span>
+                                {!isClosed && (
+                                  <span className="text-[11px] text-primary font-medium">· {elapsedStr}</span>
+                                )}
+                                {isClosed && session.closed_at && (
+                                  <span className="text-[11px] text-muted-foreground">
+                                    → {new Date(session.closed_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                )}
                               </div>
-                            ))}
-                          </div>
 
-                          {/* Orders / consumption */}
-                          {orders.length > 0 && (
-                            <div className="border-t border-border/20 px-4 py-3 space-y-2">
-                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Consumo</p>
-                              {orders.filter(o => o.status !== 'cancelled').map(order => (
-                                <div key={order.id} className="bg-secondary/20 rounded-xl p-2.5 space-y-1.5">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                      <Clock className="w-2.5 h-2.5" />
-                                      {new Date(order.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                                      {' · '}
-                                      {session.clients?.find(c => c.id === order.session_client_id)?.client_name || ''}
+                              {/* Consumption preview on collapsed */}
+                              {!isExpanded && consumptionSummary.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-1.5">
+                                  {consumptionSummary.slice(0, 3).map((item, idx) => (
+                                    <span key={idx} className="text-[10px] px-1.5 py-0.5 bg-secondary/30 rounded text-muted-foreground">
+                                      {item.qty}x {item.name}
                                     </span>
-                                    <span className={`text-[10px] font-medium ${statusColors[order.status] || 'text-muted-foreground'}`}>
-                                      {statusLabels[order.status] || order.status}
+                                  ))}
+                                  {consumptionSummary.length > 3 && (
+                                    <span className="text-[10px] px-1.5 py-0.5 bg-secondary/30 rounded text-muted-foreground">
+                                      +{consumptionSummary.length - 3} itens
                                     </span>
+                                  )}
+                                </div>
+                              )}
+                              {!isExpanded && consumptionSummary.length === 0 && (
+                                <p className="text-[10px] text-muted-foreground/50 mt-1">Nenhum consumo registrado</p>
+                              )}
+                            </div>
+
+                            {/* Total + chevron */}
+                            <div className="flex flex-col items-end gap-1 shrink-0">
+                              {total > 0 && (
+                                <div className="flex items-center gap-1 px-2 py-1 bg-primary/10 rounded-lg">
+                                  <DollarSign className="w-3 h-3 text-primary" />
+                                  <span className="text-xs font-bold text-primary">
+                                    {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                  </span>
+                                </div>
+                              )}
+                              {itemCount > 0 && (
+                                <span className="text-[10px] text-muted-foreground">{itemCount} itens</span>
+                              )}
+                              {isExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-muted-foreground mt-0.5" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-muted-foreground mt-0.5" />
+                              )}
+                            </div>
+                          </div>
+                        </button>
+
+                        {/* Expanded content */}
+                        {isExpanded && (
+                          <div className="border-t border-border/20 animate-slide-up">
+                            {/* Clients */}
+                            <div className="px-4 py-3 space-y-2">
+                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Clientes</p>
+                              {session.clients?.map(client => (
+                                <div key={client.id} className="flex items-center justify-between py-1">
+                                  <button
+                                    onClick={() => !isClosed && setOrderModal({ sessionId: session.id, clientId: client.id, clientName: client.client_name })}
+                                    className={`flex items-center gap-2 text-sm transition-colors ${
+                                      isClosed ? 'text-muted-foreground cursor-default' : 'text-foreground hover:text-primary'
+                                    }`}
+                                  >
+                                    <User className="w-4 h-4 text-muted-foreground" />
+                                    <span className="truncate">{client.client_name}</span>
+                                  </button>
+                                  {!isClosed && (
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                        onClick={() => setOrderModal({ sessionId: session.id, clientId: client.id, clientName: client.client_name })}
+                                        className="text-[10px] px-2 py-1 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors flex items-center gap-1"
+                                      >
+                                        <RotateCcw className="w-3 h-3" /> Pedir
+                                      </button>
+                                      <button
+                                        onClick={() => copyLink(session.id, client.client_token)}
+                                        className="text-muted-foreground hover:text-primary transition-colors"
+                                      >
+                                        <Copy className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Detailed consumption */}
+                            {orders.length > 0 && (
+                              <div className="border-t border-border/20 px-4 py-3 space-y-2">
+                                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Consumo Detalhado</p>
+
+                                {/* Aggregated items */}
+                                {consumptionSummary.map((item, idx) => (
+                                  <div key={idx} className="flex items-center justify-between text-xs py-0.5">
+                                    <span className="text-foreground/80">{item.qty}x {item.name}</span>
+                                    <span className="text-muted-foreground font-medium">R$ {item.subtotal.toFixed(2)}</span>
                                   </div>
-                                  {order.items?.filter(it => it.status !== 'cancelled').map(item => (
-                                    <div key={item.id} className="flex items-center justify-between text-xs">
-                                      <span className="text-foreground/80">
-                                        {item.quantity}x {item.menu_item?.name || 'Item'}
+                                ))}
+
+                                {/* Orders timeline */}
+                                <div className="mt-2 pt-2 border-t border-border/10 space-y-1.5">
+                                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Pedidos</p>
+                                  {orders.filter(o => o.status !== 'cancelled').map(order => (
+                                    <div key={order.id} className="flex items-center justify-between text-[11px]">
+                                      <span className="text-muted-foreground flex items-center gap-1">
+                                        <Clock className="w-2.5 h-2.5" />
+                                        {new Date(order.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                        {' · '}
+                                        {session.clients?.find(c => c.id === order.session_client_id)?.client_name || ''}
                                       </span>
-                                      <span className="text-muted-foreground font-medium">
-                                        R$ {(item.quantity * Number(item.unit_price)).toFixed(2)}
+                                      <span className={`font-medium ${statusColors[order.status] || 'text-muted-foreground'}`}>
+                                        {statusLabels[order.status] || order.status}
                                       </span>
                                     </div>
                                   ))}
                                 </div>
-                              ))}
 
-                              {/* Total */}
-                              <div className="flex items-center justify-between pt-2 border-t border-border/20">
-                                <span className="text-xs font-semibold text-foreground">Total da comanda</span>
-                                <span className="text-sm font-bold text-primary">
-                                  R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                                </span>
+                                {/* Total */}
+                                <div className="flex items-center justify-between pt-3 border-t border-border/20">
+                                  <span className="text-sm font-semibold text-foreground">Total da Comanda</span>
+                                  <span className="text-base font-bold text-primary">
+                                    R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                  </span>
+                                </div>
                               </div>
-                            </div>
-                          )}
+                            )}
 
-                          {orders.length === 0 && sessionOrders[session.id] && (
-                            <div className="border-t border-border/20 px-4 py-4 text-center">
-                              <p className="text-xs text-muted-foreground">Nenhum pedido ainda</p>
-                            </div>
-                          )}
+                            {orders.length === 0 && sessionOrders[session.id] && (
+                              <div className="border-t border-border/20 px-4 py-4 text-center">
+                                <p className="text-xs text-muted-foreground">Nenhum pedido ainda</p>
+                              </div>
+                            )}
 
-                          {/* Actions */}
-                          <div className="border-t border-border/20 flex">
-                            <button
-                              onClick={() => addClient(session.id)}
-                              className="flex-1 py-2.5 text-xs text-muted-foreground hover:text-primary flex items-center justify-center gap-1 transition-colors"
-                            >
-                              <UserPlus className="w-3.5 h-3.5" /> Adicionar Cliente
-                            </button>
-                            <div className="w-px bg-border/20" />
-                            <button
-                              onClick={() => closeSession(session.id)}
-                              className="flex-1 py-2.5 text-xs text-destructive/70 hover:text-destructive flex items-center justify-center gap-1 transition-colors"
-                            >
-                              <XCircle className="w-3.5 h-3.5" /> Fechar Comanda
-                            </button>
+                            {/* Actions */}
+                            {!isClosed && (
+                              <div className="border-t border-border/20 flex">
+                                <button
+                                  onClick={() => addClient(session.id)}
+                                  className="flex-1 py-2.5 text-xs text-muted-foreground hover:text-primary flex items-center justify-center gap-1 transition-colors"
+                                >
+                                  <UserPlus className="w-3.5 h-3.5" /> Adicionar Cliente
+                                </button>
+                                <div className="w-px bg-border/20" />
+                                <button
+                                  onClick={() => closeSession(session.id)}
+                                  className="flex-1 py-2.5 text-xs text-destructive/70 hover:text-destructive flex items-center justify-center gap-1 transition-colors"
+                                >
+                                  <XCircle className="w-3.5 h-3.5" /> Fechar Comanda
+                                </button>
+                              </div>
+                            )}
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </>
         )}
 
