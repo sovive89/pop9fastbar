@@ -57,7 +57,7 @@ const StaffDashboard = () => {
 
   const fetchAll = async () => {
     const today = new Date().toISOString().split('T')[0];
-    const [sessRes, closedRes, ordRes, itemsRes, sessListRes] = await Promise.all([
+    const [sessRes, closedRes, ordRes, itemsRes, sessListRes, closedListRes] = await Promise.all([
       supabase.from('sessions').select('*', { count: 'exact', head: true }).eq('status', 'active'),
       supabase.from('sessions').select('*', { count: 'exact', head: true }).eq('status', 'closed').gte('closed_at', today),
       supabase.from('orders').select('*', { count: 'exact', head: true }).gte('created_at', today),
@@ -65,12 +65,23 @@ const StaffDashboard = () => {
       canManageSessions
         ? supabase.from('sessions').select('*, clients:session_clients(*)').eq('status', 'active').order('opened_at', { ascending: false })
         : Promise.resolve({ data: null }),
+      canManageSessions
+        ? supabase.from('sessions').select('*, clients:session_clients(*)').eq('status', 'closed').gte('closed_at', today).order('closed_at', { ascending: false })
+        : Promise.resolve({ data: null }),
     ]);
     setActiveSessions(sessRes.count || 0);
     setClosedToday(closedRes.count || 0);
     setTodayOrders(ordRes.count || 0);
     setPendingItems(itemsRes.count || 0);
-    if (sessListRes.data) setSessions(sessListRes.data as any);
+    if (sessListRes.data) {
+      setSessions(sessListRes.data as any);
+      // Auto-load orders for all active sessions
+      (sessListRes.data as any[]).forEach((s: any) => fetchSessionOrders(s.id));
+    }
+    if (closedListRes.data) {
+      setClosedSessions(closedListRes.data as any);
+      (closedListRes.data as any[]).forEach((s: any) => fetchSessionOrders(s.id));
+    }
   };
 
   const fetchRecentOrders = async () => {
