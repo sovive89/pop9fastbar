@@ -119,74 +119,87 @@ const ClientRegistration = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
-      <div className="w-full max-w-sm space-y-8">
-        {/* Logo */}
-        <div className="text-center space-y-3">
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
-            <UtensilsCrossed className="w-8 h-8 text-primary" />
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-12">
+      <div className="w-full max-w-sm space-y-10">
+        {/* Logo & Welcome */}
+        <div className="text-center space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto shadow-inner">
+            <UtensilsCrossed className="w-10 h-10 text-primary" />
           </div>
-          <div>
-            <h1 className="font-display font-bold text-2xl text-foreground">POP9 BAR</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Identifique-se para abrir sua comanda
+          <div className="space-y-2">
+            <h1 className="font-display font-bold text-3xl text-foreground tracking-tight">POP9 BAR</h1>
+            <div className="h-1 w-12 bg-primary mx-auto rounded-full" />
+            <p className="text-base text-muted-foreground font-medium">
+              Seja bem-vindo! 👋
+            </p>
+            <p className="text-sm text-muted-foreground/80">
+              Preencha abaixo para abrir sua comanda digital.
             </p>
           </div>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Nome completo
-            </label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Seu nome completo"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                className="pl-10 h-12 rounded-xl bg-secondary/30"
-                autoFocus
-              />
+        {/* Form Card */}
+        <div className="glass p-8 rounded-[2.5rem] border border-border/40 shadow-2xl shadow-primary/5 animate-in fade-in zoom-in-95 duration-500 delay-200">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest ml-1">
+                Nome completo
+              </label>
+              <div className="relative group">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                <Input
+                  placeholder="Como quer ser chamado?"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  className="pl-12 h-14 rounded-2xl bg-secondary/20 border-border/20 focus:bg-secondary/40 transition-all text-base"
+                  autoFocus
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Celular
-            </label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="(00) 00000-0000"
-                value={phone}
-                onChange={e => setPhone(formatPhoneBR(e.target.value))}
-                className="pl-10 h-12 rounded-xl bg-secondary/30"
-                inputMode="tel"
-              />
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest ml-1">
+                WhatsApp / Celular
+              </label>
+              <div className="relative group">
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                <Input
+                  placeholder="(00) 00000-0000"
+                  value={phone}
+                  onChange={e => setPhone(formatPhoneBR(e.target.value))}
+                  className="pl-12 h-14 rounded-2xl bg-secondary/20 border-border/20 focus:bg-secondary/40 transition-all text-base"
+                  inputMode="tel"
+                />
+              </div>
             </div>
+
+            <Button
+              type="submit"
+              disabled={!isValid || loading}
+              className="w-full h-14 rounded-2xl text-lg font-bold gap-3 mt-4 shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform"
+            >
+              {loading ? (
+                <div className="w-6 h-6 border-3 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  Abrir Comanda
+                  <ArrowRight className="w-6 h-6" />
+                </>
+              )}
+            </Button>
+          </form>
+        </div>
+
+        <div className="text-center space-y-4 animate-in fade-in duration-1000 delay-500">
+          <p className="text-[11px] text-muted-foreground/60 leading-relaxed px-4">
+            Ao abrir sua comanda, você concorda com os termos de uso do estabelecimento. Seus dados estão seguros.
+          </p>
+          <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-muted-foreground/40 uppercase tracking-tighter">
+            <div className="w-8 h-[1px] bg-border/30" />
+            Powered by Go Out Go Smart
+            <div className="w-8 h-[1px] bg-border/30" />
           </div>
-
-          <Button
-            type="submit"
-            disabled={!isValid || loading}
-            className="w-full h-13 rounded-2xl text-base font-semibold gap-2 mt-2"
-          >
-            {loading ? (
-              <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <>
-                Acessar cardápio
-                <ArrowRight className="w-5 h-5" />
-              </>
-            )}
-          </Button>
-        </form>
-
-        <p className="text-center text-[11px] text-muted-foreground">
-          Seus dados são usados apenas para identificar sua comanda neste estabelecimento.
-        </p>
+        </div>
       </div>
     </div>
   );

@@ -18,9 +18,14 @@ export default defineConfig(({ mode }) => ({
       includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
         name: 'Go Out Go Smart - Cliente',
-        short_name: 'GoSmart Cliente',
+        short_name: 'GoSmart',
         description: 'Sistema de pedidos inteligente para clientes',
-        theme_color: '#ffffff',
+        theme_color: '#000000',
+        background_color: '#000000',
+        display: 'standalone',
+        orientation: 'portrait',
+        scope: '/',
+        start_url: '/',
         icons: [
           {
             src: 'pwa-192x192.png',
