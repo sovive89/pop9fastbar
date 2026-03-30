@@ -37,11 +37,13 @@ const StaffDashboard = () => {
   const { user, role, signOut } = useAuth();
 
   const [tab, setTab] = useState<'comandas' | 'pedidos'>('comandas');
+  const [sessionFilter, setSessionFilter] = useState<'active' | 'closed'>('active');
   const [activeSessions, setActiveSessions] = useState(0);
   const [closedToday, setClosedToday] = useState(0);
   const [todayOrders, setTodayOrders] = useState(0);
   const [pendingItems, setPendingItems] = useState(0);
   const [sessions, setSessions] = useState<(Session & { clients: SessionClient[] })[]>([]);
+  const [closedSessions, setClosedSessions] = useState<(Session & { clients: SessionClient[] })[]>([]);
   const [showNewSession, setShowNewSession] = useState(false);
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
