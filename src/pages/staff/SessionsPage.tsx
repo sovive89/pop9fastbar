@@ -42,7 +42,7 @@ const SessionsPage = () => {
     const { data: session, error } = await supabase.from('sessions').insert({ opened_by: user?.id }).select().single();
     if (error || !session) { toast({ title: 'Erro ao criar comanda', variant: 'destructive' }); return; }
     await supabase.from('session_clients').insert({ session_id: session.id, client_name: clientName.trim(), client_phone: clientPhone.replace(/\D/g, '') } as any);
-    toast({ title: 'Comanda aberta!' });
+    await copyToClipboard(getSessionClientInterfaceLink(session.id), 'Comanda aberta! URL do cliente copiada.');
     setShowNew(false);
     setClientName('');
     setClientPhone('');
@@ -68,6 +68,19 @@ const SessionsPage = () => {
 
   const getSessionClientInterfaceLink = (sessionId: string) => {
     return `${window.location.origin}/order/${sessionId}`;
+  };
+
+  const copyToClipboard = async (text: string, successMessage: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({ title: successMessage });
+    } catch {
+      toast({
+        title: 'Não foi possível copiar automaticamente',
+        description: 'Copie manualmente o link exibido na tela.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -135,8 +148,7 @@ const SessionsPage = () => {
                     variant="ghost"
                     className="h-7 text-xs text-primary"
                     onClick={() => {
-                      navigator.clipboard.writeText(getSessionClientInterfaceLink(session.id));
-                      toast({ title: 'URL do cliente copiada!' });
+                      copyToClipboard(getSessionClientInterfaceLink(session.id), 'URL do cliente copiada!');
                     }}
                   >
                     <QrCode className="w-3 h-3 mr-1" /> Copiar
@@ -155,8 +167,7 @@ const SessionsPage = () => {
                     {client.client_name}
                   </button>
                   <Button size="sm" variant="ghost" className="h-7 text-xs text-primary" onClick={() => {
-                    navigator.clipboard.writeText(getClientLink(session.id, client.client_token));
-                    toast({ title: 'Link copiado!' });
+                    copyToClipboard(getClientLink(session.id, client.client_token), 'Link copiado!');
                   }}>
                     <QrCode className="w-3 h-3 mr-1" /> Link
                   </Button>
