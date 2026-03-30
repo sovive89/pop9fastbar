@@ -42,7 +42,7 @@ const ClientRegistration = () => {
 
       // If session is active and we have a saved token, redirect automatically
       if (isActive && savedToken) {
-        navigate(`/order/${sessionId}/${savedToken}`, { replace: true });
+        navigate(`/cliente/pedido/${sessionId}/${savedToken}`, { replace: true });
       }
     };
     validate();
@@ -69,7 +69,7 @@ const ClientRegistration = () => {
       // Save to local storage for persistence
       localStorage.setItem(`client_token_${sessionId}`, existing.client_token);
       // Already registered, go directly to menu
-      navigate(`/order/${sessionId}/${existing.client_token}`, { replace: true });
+      navigate(`/cliente/pedido/${sessionId}/${existing.client_token}`, { replace: true });
       return;
     }
 
@@ -91,7 +91,7 @@ const ClientRegistration = () => {
 
     // Save to local storage for persistence
     localStorage.setItem(`client_token_${sessionId}`, data.client_token);
-    navigate(`/order/${sessionId}/${data.client_token}`, { replace: true });
+    navigate(`/cliente/pedido/${sessionId}/${data.client_token}`, { replace: true });
   };
 
   if (sessionValid === null) {

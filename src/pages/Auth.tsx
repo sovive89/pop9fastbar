@@ -28,9 +28,9 @@ const Auth = () => {
 
   useEffect(() => {
     if (user && !loading && role) {
-      if (role === 'admin') navigate('/staff/admin');
-      else if (role === 'kitchen') navigate('/staff/kitchen');
-      else navigate('/staff');
+      if (role === 'admin') navigate('/gestor/admin');
+      else if (role === 'kitchen') navigate('/gestor/cozinha');
+      else navigate('/gestor');
     }
   }, [user, loading, role, navigate]);
 

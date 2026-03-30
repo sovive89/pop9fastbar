@@ -53,7 +53,7 @@ const AdminPage = () => {
             <Badge className="bg-primary/15 text-primary border-primary/20 gap-1">
               <Settings className="w-3 h-3" /> Admin
             </Badge>
-            <Button variant="ghost" size="icon" onClick={() => navigate('/staff')} className="h-8 w-8">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/gestor')} className="h-8 w-8">
               <ArrowLeft className="w-4 h-4" />
             </Button>
           </div>

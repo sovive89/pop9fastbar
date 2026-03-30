@@ -63,11 +63,11 @@ const SessionsPage = () => {
   };
 
   const getClientLink = (sessionId: string, token: string) => {
-    return `${window.location.origin}/order/${sessionId}/${token}`;
+    return `${window.location.origin}/cliente/pedido/${sessionId}/${token}`;
   };
 
   const getSessionClientInterfaceLink = (sessionId: string) => {
-    return `${window.location.origin}/order/${sessionId}`;
+    return `${window.location.origin}/cliente/pedido/${sessionId}`;
   };
 
   const copyToClipboard = async (text: string, successMessage: string) => {
@@ -87,7 +87,7 @@ const SessionsPage = () => {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 glass border-b border-border/30">
         <div className="container mx-auto px-4 py-3 flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/staff')}><ArrowLeft className="w-5 h-5" /></Button>
+          <Button variant="ghost" size="icon" onClick={() => navigate('/gestor')}><ArrowLeft className="w-5 h-5" /></Button>
           <h1 className="font-display font-bold text-lg text-foreground flex-1">Comandas</h1>
           <Button size="sm" onClick={() => setShowNew(true)} className="rounded-xl gap-1"><Plus className="w-4 h-4" /> Nova</Button>
         </div>
@@ -161,7 +161,7 @@ const SessionsPage = () => {
               {session.clients?.map(client => (
                 <div key={client.id} className="flex items-center justify-between bg-secondary/20 rounded-xl px-3 py-2">
                   <button
-                    onClick={() => navigate(`/order/${session.id}/${client.client_token}`)}
+                    onClick={() => navigate(`/cliente/pedido/${session.id}/${client.client_token}`)}
                     className="text-sm text-foreground hover:text-primary transition-colors underline-offset-2 hover:underline"
                   >
                     {client.client_name}

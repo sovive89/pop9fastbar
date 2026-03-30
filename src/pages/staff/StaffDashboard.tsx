@@ -163,7 +163,7 @@ const StaffDashboard = () => {
   };
 
   const copyLink = (sessionId: string, token: string) => {
-    navigator.clipboard.writeText(`${window.location.origin}/order/${sessionId}/${token}`);
+    navigator.clipboard.writeText(`${window.location.origin}/cliente/pedido/${sessionId}/${token}`);
     toast({ title: 'Link copiado!' });
   };
 
@@ -227,10 +227,10 @@ const StaffDashboard = () => {
           <div className="flex items-center gap-2">
             {role === 'admin' && (
               <>
-                <Button variant="outline" size="sm" onClick={() => navigate('/staff/reports')} className="rounded-xl gap-1.5 h-8 text-xs border-primary/30 text-primary">
+                <Button variant="outline" size="sm" onClick={() => navigate('/gestor/relatorios')} className="rounded-xl gap-1.5 h-8 text-xs border-primary/30 text-primary">
                   <BarChart3 className="w-3.5 h-3.5" /> Relatórios
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => navigate('/staff/admin')} className="rounded-xl gap-1.5 h-8 text-xs border-primary/30 text-primary">
+                <Button variant="outline" size="sm" onClick={() => navigate('/gestor/admin')} className="rounded-xl gap-1.5 h-8 text-xs border-primary/30 text-primary">
                   <Settings className="w-3.5 h-3.5" /> Admin
                 </Button>
               </>
@@ -592,7 +592,7 @@ const StaffDashboard = () => {
             </div>
 
             {(role === 'admin' || role === 'kitchen' || role === 'attendant') && (
-              <Button variant="outline" onClick={() => navigate('/staff/kitchen')} className="rounded-xl gap-1.5 border-primary/30 text-primary">
+              <Button variant="outline" onClick={() => navigate('/gestor/cozinha')} className="rounded-xl gap-1.5 border-primary/30 text-primary">
                 <ChefHat className="w-4 h-4" /> Abrir Painel da Cozinha
               </Button>
             )}
