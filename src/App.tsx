@@ -14,6 +14,7 @@ import AdminPage from "./pages/staff/AdminPage";
 import AdminMenuPage from "./pages/staff/AdminMenuPage";
 import ReportsPage from "./pages/staff/ReportsPage";
 import ClientOrder from "./pages/client/ClientOrder";
+import ClientRegistration from "./pages/client/ClientRegistration";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,6 +65,7 @@ const App = () => {
               <Route path="/staff/reports" element={<ProtectedRoute allowedRoles={['admin']}><ReportsPage /></ProtectedRoute>} />
 
               {/* Client routes (public, no auth) */}
+              <Route path="/order/:sessionId" element={<ClientRegistration />} />
               <Route path="/order/:sessionId/:clientToken" element={<ClientOrder />} />
 
               <Route path="*" element={<NotFound />} />
