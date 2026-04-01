@@ -4,7 +4,6 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
@@ -15,17 +14,24 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: 'autoUpdate',
+      devOptions: {
+        enabled: false,
+      },
+      workbox: {
+        navigateFallbackDenylist: [/^\/~oauth/],
+      },
       includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Go Out Go Smart - Cliente',
-        short_name: 'GoSmart',
-        description: 'Sistema de pedidos inteligente para clientes',
-        theme_color: '#000000',
-        background_color: '#000000',
+        name: 'PØP9 BAR',
+        short_name: 'PØP9',
+        description: 'Comanda digital inteligente - Faça seus pedidos pelo celular',
+        theme_color: '#0F0F0F',
+        background_color: '#0F0F0F',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
+        categories: ['food', 'lifestyle'],
         icons: [
           {
             src: 'pwa-192x192.png',
