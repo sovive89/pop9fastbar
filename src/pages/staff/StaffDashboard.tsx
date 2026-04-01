@@ -464,6 +464,18 @@ const StaffDashboard = () => {
         />
       )}
 
+      {closeModal && (
+        <CloseSessionModal
+          sessionId={closeModal.sessionId}
+          clientName={closeModal.clientName}
+          total={closeModal.total}
+          items={closeModal.items}
+          openedAt={closeModal.openedAt}
+          onClose={() => setCloseModal(null)}
+          onClosed={() => { setCloseModal(null); fetchAll(); }}
+        />
+      )}
+
       {/* Token confirmation modal */}
       {showTokenModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
