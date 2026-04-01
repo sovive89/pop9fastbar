@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { UtensilsCrossed, User, Phone, Mail, ArrowRight, AlertCircle } from 'lucide-react';
+import { Wine, User, Phone, Mail, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const formatPhoneBR = (value: string) => {
@@ -11,6 +11,11 @@ const formatPhoneBR = (value: string) => {
   if (digits.length <= 2) return digits;
   if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+};
+
+const validateName = (name: string) => {
+  const parts = name.trim().split(/\s+/);
+  return parts.length >= 2 && parts.every(p => p.length >= 2);
 };
 
 const ClientRegistration = () => {
@@ -45,7 +50,8 @@ const ClientRegistration = () => {
   }, [urlSessionId, navigate]);
 
   const phoneDigits = phone.replace(/\D/g, '');
-  const isValid = name.trim().length >= 3 && phoneDigits.length === 11;
+  const nameValid = validateName(name);
+  const isValid = nameValid && phoneDigits.length === 11;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +76,6 @@ const ClientRegistration = () => {
         targetSessionId = newSession.id;
       }
 
-      // Registra o cliente na sessão
       const insertData: any = {
         session_id: targetSessionId,
         client_name: name.trim(),
@@ -121,7 +126,7 @@ const ClientRegistration = () => {
         {/* Logo & Welcome */}
         <div className="text-center space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="w-20 h-20 rounded-3xl bg-[#FF8A00]/10 flex items-center justify-center mx-auto shadow-inner border border-[#FF8A00]/20">
-            <UtensilsCrossed className="w-10 h-10 text-[#FF8A00]" />
+            <Wine className="w-10 h-10 text-[#FF8A00]" strokeWidth={1.5} />
           </div>
           <div className="space-y-2">
             <h1 className="font-display font-black text-4xl tracking-tighter italic">P<span className="text-[#FF8A00]">Ø</span>P9 BAR</h1>
@@ -145,7 +150,7 @@ const ClientRegistration = () => {
               <div className="relative group">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-[#FF8A00] transition-colors" />
                 <Input
-                  placeholder="Como quer ser chamado?"
+                  placeholder="Nome e sobrenome"
                   value={name}
                   onChange={e => setName(e.target.value)}
                   className="pl-12 h-14 rounded-2xl bg-white/5 border-white/10 focus:bg-white/10 transition-all text-base text-white"
@@ -153,6 +158,9 @@ const ClientRegistration = () => {
                   required
                 />
               </div>
+              {name.length > 0 && !nameValid && (
+                <p className="text-[10px] text-red-400 ml-1">Informe nome e sobrenome (mínimo 2 palavras)</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -174,7 +182,7 @@ const ClientRegistration = () => {
 
             <div className="space-y-2">
               <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">
-                E-mail (CRM & Fidelidade)
+                E-mail <span className="text-white/15">(opcional)</span>
               </label>
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-[#FF8A00] transition-colors" />
