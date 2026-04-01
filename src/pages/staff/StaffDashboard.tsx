@@ -237,7 +237,7 @@ const StaffDashboard = () => {
                   <Hash className="w-2.5 h-2.5 mr-0.5" />{session.id.slice(0, 4).toUpperCase()}
                 </Badge>
                 <div className="flex items-center gap-1 text-[10px] text-white/40 font-bold uppercase tracking-tighter">
-                  <Clock className="w-3 h-3" /> {formatTime(session.opened_at)}
+                  <Clock className="w-3 h-3" /> {formatDateTime(session.opened_at)}
                 </div>
                 {isActive && (
                   <Badge className="bg-green-500/10 text-green-400 border-green-500/20 text-[9px] py-0 h-4">
