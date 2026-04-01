@@ -9,8 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import {
   ShoppingBag, Search, Plus, Minus, X, Send, CheckCircle2,
   Clock, ChevronLeft, AlertCircle, Sparkles, Trash2,
-  UtensilsCrossed, MessageSquare
+  Wine, MessageSquare
 } from 'lucide-react';
+import pop9Logo from '@/assets/pop9-logo.png';
 import { useToast } from '@/hooks/use-toast';
 import type { MenuCategory, MenuItem, MenuItemIngredient } from '@/types';
 import QRCode from '@/components/QRCode';
@@ -49,7 +50,7 @@ const ItemDetailModal = ({
             <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
           ) : (
             <div className="flex items-center justify-center h-full">
-              <UtensilsCrossed className="w-12 h-12 text-primary/40" />
+              <Wine className="w-12 h-12 text-primary/40" strokeWidth={1.5} />
             </div>
           )}
           <button onClick={onClose} className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/80 backdrop-blur flex items-center justify-center">
@@ -262,8 +263,9 @@ const ClientOrderInner = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-6">
         <div className="text-center space-y-4">
-          <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
-            <AlertCircle className="w-10 h-10 text-destructive" />
+          <img src={pop9Logo} alt="POP9 BAR" className="w-20 h-auto mx-auto object-contain mb-2" style={{ mixBlendMode: 'lighten', filter: 'drop-shadow(0 0 10px hsl(38 92% 50% / 0.2))' }} />
+          <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
+            <AlertCircle className="w-8 h-8 text-destructive" />
           </div>
           <h1 className="text-xl font-display font-bold text-foreground">Sessão inválida</h1>
           <p className="text-muted-foreground text-sm max-w-xs mx-auto">
@@ -297,11 +299,9 @@ const ClientOrderInner = () => {
       <header className="sticky top-0 z-50 glass border-b border-border/30">
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-              <UtensilsCrossed className="w-4 h-4 text-primary" />
-            </div>
+            <img src={pop9Logo} alt="POP9 BAR" className="w-9 h-9 object-contain" style={{ mixBlendMode: 'lighten' }} />
             <div>
-              <h1 className="font-display font-bold text-base text-foreground leading-tight">POP9 BAR</h1>
+              <h1 className="font-display font-bold text-base text-foreground leading-tight">PØP9 BAR</h1>
               <p className="text-[11px] text-muted-foreground">Olá, {clientName} 👋</p>
             </div>
           </div>
@@ -319,7 +319,7 @@ const ClientOrderInner = () => {
       <nav className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-border/30 safe-area-bottom">
         <div className="flex">
           {([
-            { id: 'menu' as const, label: 'Cardápio', icon: UtensilsCrossed },
+            { id: 'menu' as const, label: 'Cardápio', icon: Wine },
             { id: 'cart' as const, label: `Carrinho`, icon: ShoppingBag, badge: totalItems },
             { id: 'orders' as const, label: 'Pedidos', icon: Clock },
             { id: 'bill' as const, label: 'Conta', icon: CheckCircle2 },
@@ -381,7 +381,7 @@ const ClientOrderInner = () => {
 
           {filteredItems.length === 0 ? (
             <div className="text-center py-16">
-              <UtensilsCrossed className="w-12 h-12 text-muted-foreground/20 mx-auto mb-3" />
+              <Wine className="w-12 h-12 text-muted-foreground/20 mx-auto mb-3" strokeWidth={1.5} />
               <p className="text-muted-foreground text-sm">Nenhum item encontrado</p>
             </div>
           ) : (
