@@ -44,7 +44,6 @@ const ItemDetailModal = ({
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto glass rounded-t-3xl sm:rounded-3xl border border-border/30 animate-slide-up">
-        {/* Header image or gradient */}
         <div className="relative h-44 bg-gradient-to-br from-primary/20 via-secondary to-background overflow-hidden">
           {item.image_url ? (
             <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
@@ -59,14 +58,12 @@ const ItemDetailModal = ({
         </div>
 
         <div className="p-5 space-y-5">
-          {/* Name & price */}
           <div>
             <h2 className="font-display font-bold text-xl text-foreground">{item.name}</h2>
             {item.description && <p className="text-sm text-muted-foreground mt-1">{item.description}</p>}
             <p className="text-lg font-bold text-primary mt-2">R$ {Number(item.price).toFixed(2)}</p>
           </div>
 
-          {/* Remove ingredients */}
           {defaults.filter(d => d.is_removable).length > 0 && (
             <div>
               <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Remover ingredientes</h3>
@@ -88,7 +85,6 @@ const ItemDetailModal = ({
             </div>
           )}
 
-          {/* Add extras */}
           {extras.length > 0 && (
             <div>
               <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
@@ -119,7 +115,6 @@ const ItemDetailModal = ({
             </div>
           )}
 
-          {/* Notes */}
           <div>
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
               <MessageSquare className="w-3 h-3 inline mr-1" />
@@ -133,7 +128,6 @@ const ItemDetailModal = ({
             />
           </div>
 
-          {/* Add button */}
           <Button
             className="w-full h-13 rounded-2xl text-base font-semibold gap-2"
             onClick={() => onAdd(notes, removed, added)}
@@ -162,7 +156,7 @@ const ClientOrderInner = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [orders, setOrders] = useState<any[]>([]);
-  const [view, setView] = useState<'menu' | 'cart' | 'orders'>('menu');
+  const [view, setView] = useState<'menu' | 'cart' | 'orders' | 'bill'>('menu');
   const [detailItem, setDetailItem] = useState<MenuItem | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -206,7 +200,6 @@ const ClientOrderInner = () => {
 
   useEffect(() => { if (clientId) fetchOrders(); }, [clientId, view, fetchOrders]);
 
-  // Realtime for order updates
   useEffect(() => {
     if (!clientId) return;
     const channel = supabase
@@ -228,6 +221,7 @@ const ClientOrderInner = () => {
     setSubmitting(true);
     const { data: order, error } = await supabase.from('orders').insert({ session_id: sessionId, session_client_id: clientId }).select().single();
     if (error || !order) { toast({ title: 'Erro ao enviar pedido', variant: 'destructive' }); setSubmitting(false); return; }
+    
     const orderItems = cartItems.map(ci => ({
       order_id: order.id,
       menu_item_id: ci.menuItem.id,
@@ -237,6 +231,7 @@ const ClientOrderInner = () => {
       removed_ingredients: ci.removedIngredients.length > 0 ? ci.removedIngredients : null,
       added_ingredients: ci.addedIngredients.length > 0 ? ci.addedIngredients.map(a => a.name) : null,
     }));
+
     await supabase.from('order_items').insert(orderItems);
     clearCart();
     setSubmitting(false);
@@ -252,7 +247,6 @@ const ClientOrderInner = () => {
     setDetailItem(null);
   };
 
-  // ─── Invalid / Loading states ───
   if (sessionValid === null) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -291,7 +285,6 @@ const ClientOrderInner = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Detail modal */}
       {detailItem && (
         <ItemDetailModal
           item={detailItem}
@@ -301,7 +294,6 @@ const ClientOrderInner = () => {
         />
       )}
 
-      {/* Header */}
       <header className="sticky top-0 z-50 glass border-b border-border/30">
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -324,13 +316,13 @@ const ClientOrderInner = () => {
         </div>
       </header>
 
-      {/* Bottom nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-border/30 safe-area-bottom">
         <div className="flex">
           {([
             { id: 'menu' as const, label: 'Cardápio', icon: UtensilsCrossed },
             { id: 'cart' as const, label: `Carrinho`, icon: ShoppingBag, badge: totalItems },
             { id: 'orders' as const, label: 'Pedidos', icon: Clock },
+            { id: 'bill' as const, label: 'Conta', icon: CheckCircle2 },
           ]).map(tab => (
             <button
               key={tab.id}
@@ -353,10 +345,8 @@ const ClientOrderInner = () => {
         </div>
       </nav>
 
-      {/* ─── MENU VIEW ─── */}
       {view === 'menu' && (
         <main className="px-4 py-4 space-y-4">
-          {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
@@ -367,7 +357,6 @@ const ClientOrderInner = () => {
             />
           </div>
 
-          {/* Category chips */}
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4">
             <button
               onClick={() => setSelectedCategory(null)}
@@ -390,7 +379,6 @@ const ClientOrderInner = () => {
             ))}
           </div>
 
-          {/* Items */}
           {filteredItems.length === 0 ? (
             <div className="text-center py-16">
               <UtensilsCrossed className="w-12 h-12 text-muted-foreground/20 mx-auto mb-3" />
@@ -447,7 +435,6 @@ const ClientOrderInner = () => {
         </main>
       )}
 
-      {/* ─── CART VIEW ─── */}
       {view === 'cart' && (
         <main className="px-4 py-4 space-y-3">
           <div className="flex items-center justify-between">
@@ -518,7 +505,6 @@ const ClientOrderInner = () => {
                 );
               })}
 
-              {/* Total */}
               <div className="glass rounded-2xl p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -529,7 +515,6 @@ const ClientOrderInner = () => {
                 </div>
               </div>
 
-              {/* Submit */}
               <Button
                 className="w-full h-14 rounded-2xl text-base font-semibold gap-2"
                 onClick={submitOrder}
@@ -548,7 +533,6 @@ const ClientOrderInner = () => {
         </main>
       )}
 
-      {/* ─── ORDERS VIEW ─── */}
       {view === 'orders' && (
         <main className="px-4 py-4 space-y-4">
           <h2 className="font-display font-bold text-lg text-foreground">Seus Pedidos</h2>
@@ -566,7 +550,6 @@ const ClientOrderInner = () => {
               const orderStatus = statusConfig[order.status] || statusConfig.pending;
               return (
                 <div key={order.id} className="glass rounded-2xl overflow-hidden animate-slide-up" style={{ animationDelay: `${oi * 0.05}s` }}>
-                  {/* Order header */}
                   <div className="p-4 border-b border-border/20 flex items-center justify-between">
                     <div>
                       <p className="font-bold text-foreground text-sm">
@@ -583,7 +566,6 @@ const ClientOrderInner = () => {
                     </Badge>
                   </div>
 
-                  {/* Items */}
                   <div className="divide-y divide-border/10">
                     {order.items?.map((item: any) => {
                       const itemStatus = statusConfig[item.status] || statusConfig.pending;
@@ -604,7 +586,6 @@ const ClientOrderInner = () => {
                             R$ {(Number(item.unit_price) * item.quantity).toFixed(2)}
                           </p>
 
-                          {/* QR Code for unconfirmed items */}
                           {showQR && (
                             <div className="flex justify-center mt-3">
                               <QRCode
@@ -623,6 +604,57 @@ const ClientOrderInner = () => {
               );
             })
           )}
+        </main>
+      )}
+
+      {view === 'bill' && (
+        <main className="px-4 py-4 space-y-6">
+          <div className="text-center space-y-2">
+            <h2 className="font-display font-bold text-2xl text-foreground">Sua Comanda</h2>
+            <p className="text-sm text-muted-foreground">Confira o extrato dos seus pedidos</p>
+          </div>
+
+          <div className="glass rounded-[2rem] overflow-hidden border border-border/30">
+            <div className="p-6 space-y-4">
+              {orders.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">Nenhum item consumido ainda.</p>
+              ) : (
+                <div className="space-y-4">
+                  {orders.flatMap(o => o.items || []).map((item: any, idx: number) => (
+                    <div key={idx} className="flex justify-between items-start text-sm">
+                      <div className="flex-1">
+                        <p className="font-medium text-foreground">{item.quantity}x {item.menu_item?.name}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          R$ {Number(item.unit_price).toFixed(2)} cada
+                        </p>
+                      </div>
+                      <p className="font-bold text-foreground">
+                        R$ {(Number(item.unit_price) * item.quantity).toFixed(2)}
+                      </p>
+                    </div>
+                  ))}
+                  
+                  <div className="h-[1px] bg-border/20 my-4" />
+                  
+                  <div className="flex justify-between items-center">
+                    <p className="text-base font-bold text-foreground">Total Consumido</p>
+                    <p className="text-2xl font-bold text-primary">
+                      R$ {orders.reduce((sum, o) => sum + (o.items?.reduce((s: number, i: any) => s + (Number(i.unit_price) * i.quantity), 0) || 0), 0).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <Button 
+            variant="outline" 
+            className="w-full h-14 rounded-2xl border-primary/20 text-primary font-bold gap-2"
+            onClick={() => toast({ title: "Solicitação enviada!", description: "O atendente virá até sua mesa em breve." })}
+          >
+            <MessageSquare className="w-5 h-5" />
+            Chamar Atendente / Fechar Conta
+          </Button>
         </main>
       )}
     </div>
