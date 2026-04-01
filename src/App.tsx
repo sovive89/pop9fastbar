@@ -9,6 +9,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import SplashScreen from "@/components/SplashScreen";
 import Auth from "./pages/Auth";
 import ManagerDashboard from "./pages/manager/ManagerDashboard";
+import SessionDetailPage from "./pages/manager/SessionDetailPage";
 import KitchenView from "./pages/manager/KitchenView";
 import SessionsPage from "./pages/manager/SessionsPage";
 import AdminPage from "./pages/manager/AdminPage";
