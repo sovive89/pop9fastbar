@@ -225,7 +225,7 @@ const StaffDashboard = () => {
     const isActive = session.status === 'active';
 
     return (
-      <Card key={session.id} className={`bg-[#1A1A1A] border-white/5 overflow-hidden group hover:border-[#FF8A00]/30 transition-all duration-300 shadow-2xl ${!isActive ? 'opacity-70' : ''}`}>
+      <Card key={session.id} onClick={() => navigate(`/gestor/comanda/${session.id}`)} className={`bg-[#1A1A1A] border-white/5 overflow-hidden group hover:border-[#FF8A00]/30 transition-all duration-300 shadow-2xl cursor-pointer ${!isActive ? 'opacity-70' : ''}`}>
         <CardHeader className="p-5 pb-3 space-y-0">
           <div className="flex items-start justify-between">
             <div className="space-y-1 flex-1 min-w-0">
