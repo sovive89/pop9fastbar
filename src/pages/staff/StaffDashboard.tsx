@@ -404,21 +404,41 @@ const StaffDashboard = () => {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex items-center gap-2 mb-6">
-          <button
-            onClick={() => setActiveTab('active')}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'active' ? 'bg-[#FF8A00] text-black' : 'bg-white/5 text-white/50 hover:text-white'}`}
-          >
-            Ativas ({sessions.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('closed')}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'closed' ? 'bg-white/20 text-white' : 'bg-white/5 text-white/50 hover:text-white'}`}
-          >
-            Encerradas ({closedSessions.length})
-          </button>
+        {/* Tabs + View Toggle */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveTab('active')}
+              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'active' ? 'bg-[#FF8A00] text-black' : 'bg-white/5 text-white/50 hover:text-white'}`}
+            >
+              Ativas ({sessions.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('closed')}
+              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'closed' ? 'bg-white/20 text-white' : 'bg-white/5 text-white/50 hover:text-white'}`}
+            >
+              Encerradas ({closedSessions.length})
+            </button>
+          </div>
+          <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/10">
+            <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}>
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}>
+              <List className="w-4 h-4" />
+            </button>
+          </div>
         </div>
+
+        {/* Status summary badges */}
+        {activeTab === 'active' && sessions.length > 0 && (
+          <div className="flex gap-3 mb-4 flex-wrap">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl">
+              <div className="w-2 h-2 rounded-full bg-green-400" />
+              <span className="text-[11px] font-bold text-white/60">Ativa: {sessions.length}</span>
+            </div>
+          </div>
+        )}
 
         {loading ? (
           <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF8A00]" /></div>
@@ -432,7 +452,45 @@ const StaffDashboard = () => {
               </Button>
             )}
           </div>
+        ) : viewMode === 'grid' ? (
+          /* Compact Grid View - like mesa map */
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+            {filteredSessions.map(session => {
+              const client = session.clients[0];
+              const total = getSessionTotal(session.id);
+              const orders = sessionOrders[session.id] || [];
+              const itemCount = orders.flatMap(o => o.items).filter(it => it.status !== 'cancelled').length;
+              const isActive = session.status === 'active';
+              const firstName = (client?.client_name || 'N/A').split(' ')[0];
+
+              return (
+                <button
+                  key={session.id}
+                  onClick={() => navigate(`/gestor/comanda/${session.id}`)}
+                  className={`aspect-square rounded-2xl border-2 flex flex-col items-center justify-center gap-1 p-2 transition-all duration-200 hover:scale-105 ${
+                    isActive && itemCount > 0
+                      ? 'bg-[#FF8A00]/10 border-[#FF8A00] shadow-lg shadow-[#FF8A00]/10'
+                      : isActive
+                      ? 'bg-white/5 border-white/10 hover:border-[#FF8A00]/40'
+                      : 'bg-white/[0.02] border-white/5 opacity-60'
+                  }`}
+                >
+                  <span className="text-lg font-black text-white leading-none truncate max-w-full">{firstName}</span>
+                  <div className={`w-2 h-2 rounded-full ${isActive ? (itemCount > 0 ? 'bg-[#FF8A00]' : 'bg-white/20') : 'bg-red-400/60'}`} />
+                  {itemCount > 0 && (
+                    <span className="text-[9px] text-white/40 font-bold flex items-center gap-0.5">
+                      <UserIcon className="w-2.5 h-2.5" /> {itemCount}
+                    </span>
+                  )}
+                  {total > 0 && (
+                    <span className="text-[9px] font-black text-[#FF8A00]">R$ {total.toFixed(0)}</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         ) : (
+          /* List/Card View */
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
             {filteredSessions.map(renderSessionCard)}
           </div>
