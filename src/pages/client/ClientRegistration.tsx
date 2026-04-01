@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Wine, User, Phone, Mail, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import pop9Logo from '@/assets/pop9-logo.png';
 
 const formatPhoneBR = (value: string) => {
   const digits = value.replace(/\D/g, '').slice(0, 11);

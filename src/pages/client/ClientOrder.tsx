@@ -9,8 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import {
   ShoppingBag, Search, Plus, Minus, X, Send, CheckCircle2,
   Clock, ChevronLeft, AlertCircle, Sparkles, Trash2,
-  UtensilsCrossed, MessageSquare
+  Wine, MessageSquare
 } from 'lucide-react';
+import pop9Logo from '@/assets/pop9-logo.png';
 import { useToast } from '@/hooks/use-toast';
 import type { MenuCategory, MenuItem, MenuItemIngredient } from '@/types';
 import QRCode from '@/components/QRCode';
