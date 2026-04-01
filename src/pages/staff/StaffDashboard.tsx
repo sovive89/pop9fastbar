@@ -187,7 +187,7 @@ const StaffDashboard = () => {
   };
 
   const formatTime = (isoString: string) => new Date(isoString).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  const formatDate = (isoString: string) => new Date(isoString).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  const formatDateTime = (isoString: string) => new Date(isoString).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
   const getElapsed = (openedAt: string) => {
     const diff = Date.now() - new Date(openedAt).getTime();
@@ -237,7 +237,7 @@ const StaffDashboard = () => {
                   <Hash className="w-2.5 h-2.5 mr-0.5" />{session.id.slice(0, 4).toUpperCase()}
                 </Badge>
                 <div className="flex items-center gap-1 text-[10px] text-white/40 font-bold uppercase tracking-tighter">
-                  <Clock className="w-3 h-3" /> {formatTime(session.opened_at)}
+                  <Clock className="w-3 h-3" /> {formatDateTime(session.opened_at)}
                 </div>
                 {isActive && (
                   <Badge className="bg-green-500/10 text-green-400 border-green-500/20 text-[9px] py-0 h-4">
@@ -246,7 +246,7 @@ const StaffDashboard = () => {
                 )}
                 {!isActive && session.closed_at && (
                   <Badge className="bg-white/5 text-white/40 border-white/10 text-[9px] py-0 h-4">
-                    Fechada {formatDate(session.closed_at)}
+                    Fechada {formatDateTime(session.closed_at)}
                   </Badge>
                 )}
               </div>
