@@ -122,15 +122,22 @@ const ClientRegistration = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0F0F0F] flex flex-col items-center justify-center px-6 py-12 text-white">
-      <div className="w-full max-w-sm space-y-10">
+    <div className="min-h-screen bg-[#0F0F0F] relative overflow-hidden flex flex-col items-center justify-center px-6 py-12 text-white">
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full" style={{ background: 'radial-gradient(circle, hsl(38 92% 50% / 0.08) 0%, transparent 70%)' }} />
+      </div>
+
+      <div className="relative z-10 w-full max-w-sm space-y-10">
         {/* Logo & Welcome */}
         <div className="text-center space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <div className="w-20 h-20 rounded-3xl bg-[#FF8A00]/10 flex items-center justify-center mx-auto shadow-inner border border-[#FF8A00]/20">
-            <Wine className="w-10 h-10 text-[#FF8A00]" strokeWidth={1.5} />
-          </div>
+          <img 
+            src={pop9Logo} 
+            alt="POP9 BAR" 
+            className="w-32 h-auto mx-auto object-contain" 
+            width={512} height={512}
+            style={{ mixBlendMode: 'lighten', filter: 'drop-shadow(0 0 15px hsl(38 92% 50% / 0.3))' }} 
+          />
           <div className="space-y-2">
-            <h1 className="font-display font-black text-4xl tracking-tighter italic">P<span className="text-[#FF8A00]">Ø</span>P9 BAR</h1>
             <div className="h-1 w-12 bg-[#FF8A00] mx-auto rounded-full" />
             <p className="text-base text-white/60 font-medium uppercase tracking-widest">
               Abra sua Comanda 🍻
