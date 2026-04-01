@@ -13,6 +13,7 @@ import {
   X, ChevronDown, ChevronUp, User as UserIcon, XCircle, Trash2
 } from 'lucide-react';
 import pop9Logo from '@/assets/pop9-logo.png';
+import CloseSessionModal from '@/components/CloseSessionModal';
 import type { MenuCategory, MenuItem, SessionClient } from '@/types';
 
 interface OrderItemRow {
