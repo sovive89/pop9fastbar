@@ -50,7 +50,7 @@ const ItemDetailModal = ({
             <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
           ) : (
             <div className="flex items-center justify-center h-full">
-              <UtensilsCrossed className="w-12 h-12 text-primary/40" />
+              <Wine className="w-12 h-12 text-primary/40" strokeWidth={1.5} />
             </div>
           )}
           <button onClick={onClose} className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/80 backdrop-blur flex items-center justify-center">
