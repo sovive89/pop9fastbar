@@ -299,7 +299,7 @@ const StaffDashboard = () => {
           </div>
         </CardContent>
 
-        <CardFooter className="p-5 pt-3 bg-white/[0.02] border-t border-white/5 flex flex-col gap-3">
+        <CardFooter className="p-5 pt-3 bg-white/[0.02] border-t border-white/5 flex flex-col gap-3" onClick={e => e.stopPropagation()}>
           <div className="flex items-center justify-between w-full">
             <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">Total</span>
             <span className="text-xl font-black text-[#FF8A00]">R$ {total.toFixed(2)}</span>
@@ -307,9 +307,7 @@ const StaffDashboard = () => {
           <div className={`grid ${isActive ? 'grid-cols-3' : 'grid-cols-2'} gap-2 w-full`}>
             {isActive && (
               <Button
-                onClick={() => {
-                  if (client) setOrderModal({ sessionId: session.id, clientId: client.id, clientName: client.client_name });
-                }}
+                onClick={() => navigate(`/gestor/comanda/${session.id}`)}
                 variant="outline" size="sm"
                 className="bg-[#FF8A00]/10 border-[#FF8A00]/20 hover:bg-[#FF8A00]/20 text-[#FF8A00] rounded-xl h-9 text-[10px] font-bold gap-1"
               >
