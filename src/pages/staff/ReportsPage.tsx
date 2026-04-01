@@ -12,7 +12,7 @@ import {
   Package, TrendingUp, Hash, Flame, CalendarIcon
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import pop9Logo from '@/assets/pop9-logo.png';
+
 
 type Period = 'today' | 'week' | 'month' | 'custom';
 
