@@ -5,6 +5,7 @@ import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import {
   ShoppingBag, Search, Plus, Minus, X, Send, CheckCircle2,
   Clock, ChevronLeft, AlertCircle, Sparkles, Trash2,
@@ -60,7 +61,6 @@ const ClientOrder = () => {
   const generateOrderQRCode = () => {
     if (cartItems.length === 0) return;
     
-    // Criar um objeto com os dados do pedido para o QR Code
     const orderData = {
       sid: sessionId,
       cid: clientId,
@@ -72,7 +72,7 @@ const ClientOrder = () => {
         p: item.menuItem.price,
         notes: item.notes || ''
       })),
-      t: totalPrice(),
+      t: totalPrice,
       ts: Date.now()
     };
 
@@ -95,7 +95,6 @@ const ClientOrder = () => {
 
   return (
     <div className="min-h-screen bg-[#0F0F0F] text-white pb-24">
-      {/* Header Cliente */}
       <header className="bg-[#141414] border-b border-white/5 sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
         <div className="flex flex-col">
           <h1 className="text-xl font-black tracking-tighter leading-none">
@@ -109,16 +108,15 @@ const ClientOrder = () => {
           </Button>
           <Button variant="ghost" size="icon" onClick={() => setView('cart')} className="rounded-xl bg-white/5 border border-white/10 relative">
             <ShoppingBag className="w-5 h-5" />
-            {totalItems() > 0 && (
+            {totalItems > 0 && (
               <span className="absolute -top-1 -right-1 bg-[#FF8A00] text-black text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
-                {totalItems()}
+                {totalItems}
               </span>
             )}
           </Button>
         </div>
       </header>
 
-      {/* View de Menu */}
       {view === 'menu' && (
         <main className="p-6 space-y-6">
           <div className="relative">
@@ -181,7 +179,6 @@ const ClientOrder = () => {
         </main>
       )}
 
-      {/* View de Carrinho */}
       {view === 'cart' && (
         <main className="p-6 space-y-6 animate-in slide-in-from-right duration-300">
           <div className="flex items-center gap-4">
@@ -200,18 +197,18 @@ const ClientOrder = () => {
           ) : (
             <>
               <div className="space-y-4">
-                {cartItems.map(item => (
-                  <div key={item.menuItem.id} className="bg-[#1A1A1A] border border-white/5 p-4 rounded-2xl flex items-center justify-between">
+                {cartItems.map((item, index) => (
+                  <div key={index} className="bg-[#1A1A1A] border border-white/5 p-4 rounded-2xl flex items-center justify-between">
                     <div className="flex-1">
                       <h4 className="font-bold text-white">{item.menuItem.name}</h4>
                       <p className="text-xs text-[#FF8A00] font-black">R$ {(item.quantity * item.menuItem.price).toFixed(2)}</p>
                     </div>
                     <div className="flex items-center gap-3 bg-white/5 rounded-xl p-1 border border-white/10">
-                      <button onClick={() => updateQuantity(item.menuItem.id, Math.max(0, item.quantity - 1))} className="w-8 h-8 flex items-center justify-center text-white/60 hover:text-white">
+                      <button onClick={() => updateQuantity(index, Math.max(0, item.quantity - 1))} className="w-8 h-8 flex items-center justify-center text-white/60 hover:text-white">
                         <Minus className="w-4 h-4" />
                       </button>
                       <span className="font-black w-4 text-center text-sm">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.menuItem.id, item.quantity + 1)} className="w-8 h-8 flex items-center justify-center text-white/60 hover:text-white">
+                      <button onClick={() => updateQuantity(index, item.quantity + 1)} className="w-8 h-8 flex items-center justify-center text-white/60 hover:text-white">
                         <Plus className="w-4 h-4" />
                       </button>
                     </div>
@@ -222,7 +219,7 @@ const ClientOrder = () => {
               <Card className="bg-[#FF8A00] border-none rounded-[2rem] p-6 text-black">
                 <div className="flex justify-between items-center mb-4">
                   <span className="font-bold uppercase tracking-widest text-[10px] opacity-60">Total do Pedido</span>
-                  <span className="text-3xl font-black italic">R$ {totalPrice().toFixed(2)}</span>
+                  <span className="text-3xl font-black italic">R$ {totalPrice.toFixed(2)}</span>
                 </div>
                 <Button 
                   onClick={generateOrderQRCode} 
@@ -239,7 +236,6 @@ const ClientOrder = () => {
         </main>
       )}
 
-      {/* View de QR Code Gerado */}
       {view === 'qrcode' && orderQrData && (
         <main className="p-6 flex flex-col items-center justify-center min-h-[80vh] space-y-8 animate-in zoom-in-95 duration-300">
           <div className="text-center space-y-2">
@@ -248,13 +244,13 @@ const ClientOrder = () => {
           </div>
 
           <div className="bg-white p-8 rounded-[3rem] shadow-[0_0_50px_rgba(255,138,0,0.3)]">
-            <QRCode value={orderQrData} size={250} />
+            <QRCode value={orderQrData} size={250} type="order" />
           </div>
 
           <div className="w-full max-w-xs space-y-4">
             <div className="bg-white/5 border border-white/10 p-4 rounded-2xl text-center">
               <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Valor a ser lançado</p>
-              <p className="text-2xl font-black text-[#FF8A00]">R$ {totalPrice().toFixed(2)}</p>
+              <p className="text-2xl font-black text-[#FF8A00]">R$ {totalPrice.toFixed(2)}</p>
             </div>
             <Button 
               variant="outline" 
@@ -267,7 +263,6 @@ const ClientOrder = () => {
         </main>
       )}
 
-      {/* Navegação Inferior (Mobile Fixa) */}
       <nav className="fixed bottom-0 left-0 right-0 bg-[#141414]/80 backdrop-blur-xl border-t border-white/5 px-8 py-4 flex items-center justify-between z-50">
         <button onClick={() => setView('menu')} className={`flex flex-col items-center gap-1 ${view === 'menu' ? 'text-[#FF8A00]' : 'text-white/30'}`}>
           <UtensilsCrossed className="w-6 h-6" />
@@ -276,7 +271,7 @@ const ClientOrder = () => {
         <button onClick={() => setView('cart')} className={`flex flex-col items-center gap-1 relative ${view === 'cart' || view === 'qrcode' ? 'text-[#FF8A00]' : 'text-white/30'}`}>
           <ShoppingBag className="w-6 h-6" />
           <span className="text-[10px] font-bold uppercase tracking-tighter">Pedido</span>
-          {totalItems() > 0 && <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#FF8A00] rounded-full animate-pulse" />}
+          {totalItems > 0 && <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#FF8A00] rounded-full animate-pulse" />}
         </button>
         <button onClick={() => setView('orders')} className={`flex flex-col items-center gap-1 ${view === 'orders' ? 'text-[#FF8A00]' : 'text-white/30'}`}>
           <Clock className="w-6 h-6" />
