@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import {
   X, Search, Plus, Minus, Send, ShoppingBag,
-  UtensilsCrossed, ChevronRight, Trash2
+  Wine, ChevronRight, Trash2
 } from 'lucide-react';
 import type { MenuCategory, MenuItem } from '@/types';
 
@@ -160,7 +160,7 @@ const StaffOrderModal = ({ sessionId, clientId, clientName, onClose, onOrderCrea
         <div className="flex-1 overflow-y-auto px-4 pb-2 space-y-1.5 min-h-0">
           {filtered.length === 0 ? (
             <div className="py-10 text-center">
-              <UtensilsCrossed className="w-8 h-8 text-muted-foreground/20 mx-auto mb-2" />
+              <Wine className="w-8 h-8 text-muted-foreground/20 mx-auto mb-2" strokeWidth={1.5} />
               <p className="text-xs text-muted-foreground">Nenhum item encontrado</p>
             </div>
           ) : (
