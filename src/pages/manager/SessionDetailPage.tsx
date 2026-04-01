@@ -63,6 +63,7 @@ const SessionDetailPage = () => {
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState<CartEntry[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [showCloseModal, setShowCloseModal] = useState(false);
 
   const fetchSession = useCallback(async () => {
     if (!sessionId) return;
