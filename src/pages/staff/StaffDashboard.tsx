@@ -7,7 +7,7 @@ import {
   LayoutDashboard, ShoppingBag, Users, Settings, BarChart3,
   Search, Flame, User as UserIcon, QrCode, RotateCcw,
   Wine, ChevronDown, ChevronUp, ExternalLink, Hash, XCircle,
-  LayoutGrid, List, Users as UsersIcon
+  LayoutGrid, List
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
