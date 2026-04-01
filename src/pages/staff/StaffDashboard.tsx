@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { Session, SessionClient } from '@/types';
 import OrderScanner from '@/components/OrderScanner';
 import StaffOrderModal from '@/components/StaffOrderModal';
+import CloseSessionModal from '@/components/CloseSessionModal';
 import pop9Logo from '@/assets/pop9-logo.png';
 
 interface SessionOrderItem {
@@ -66,6 +67,7 @@ const StaffDashboard = () => {
   // Manual token confirm
   const [confirmToken, setConfirmToken] = useState('');
   const [showTokenModal, setShowTokenModal] = useState(false);
+  const [closeModal, setCloseModal] = useState<{ sessionId: string; clientName: string; total: number; items: { name: string; quantity: number; unitPrice: number }[]; openedAt: string } | null>(null);
 
   const fetchSessionOrders = useCallback(async (sessionId: string) => {
     const { data } = await supabase
@@ -315,7 +317,13 @@ const StaffDashboard = () => {
               </Button>
             )}
             {isActive ? (
-              <Button onClick={() => closeSession(session.id)} size="sm" className="bg-white text-black hover:bg-white/90 rounded-xl h-9 text-[10px] font-bold gap-1">
+              <Button onClick={() => setCloseModal({
+                sessionId: session.id,
+                clientName: client?.client_name || 'Sem Nome',
+                total,
+                items: allItems.map(it => ({ name: it.menu_item?.name || '', quantity: it.quantity, unitPrice: Number(it.unit_price) })),
+                openedAt: session.opened_at,
+              })} size="sm" className="bg-white text-black hover:bg-white/90 rounded-xl h-9 text-[10px] font-bold gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Fechar
               </Button>
             ) : (
@@ -453,6 +461,18 @@ const StaffDashboard = () => {
           clientName={orderModal.clientName}
           onClose={() => setOrderModal(null)}
           onOrderCreated={() => fetchAll()}
+        />
+      )}
+
+      {closeModal && (
+        <CloseSessionModal
+          sessionId={closeModal.sessionId}
+          clientName={closeModal.clientName}
+          total={closeModal.total}
+          items={closeModal.items}
+          openedAt={closeModal.openedAt}
+          onClose={() => setCloseModal(null)}
+          onClosed={() => { setCloseModal(null); fetchAll(); }}
         />
       )}
 

@@ -13,6 +13,7 @@ import {
   X, ChevronDown, ChevronUp, User as UserIcon, XCircle, Trash2
 } from 'lucide-react';
 import pop9Logo from '@/assets/pop9-logo.png';
+import CloseSessionModal from '@/components/CloseSessionModal';
 import type { MenuCategory, MenuItem, SessionClient } from '@/types';
 
 interface OrderItemRow {
@@ -62,6 +63,7 @@ const SessionDetailPage = () => {
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState<CartEntry[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [showCloseModal, setShowCloseModal] = useState(false);
 
   const fetchSession = useCallback(async () => {
     if (!sessionId) return;
@@ -242,7 +244,7 @@ const SessionDetailPage = () => {
             <ExternalLink className="w-4 h-4" /> <span className="hidden sm:inline">Link</span>
           </Button>
           {isActive ? (
-            <Button onClick={closeSession} size="sm" className="bg-white text-black hover:bg-white/90 rounded-xl h-9 gap-1 font-bold text-xs">
+            <Button onClick={() => setShowCloseModal(true)} size="sm" className="bg-white text-black hover:bg-white/90 rounded-xl h-9 gap-1 font-bold text-xs">
               <CheckCircle2 className="w-4 h-4" /> Fechar
             </Button>
           ) : (
@@ -496,6 +498,18 @@ const SessionDetailPage = () => {
           </Button>
         </div>
       </div>
+
+      {showCloseModal && client && (
+        <CloseSessionModal
+          sessionId={sessionId!}
+          clientName={client.client_name}
+          total={total}
+          items={allItems.map(it => ({ name: it.menu_item?.name || '', quantity: it.quantity, unitPrice: Number(it.unit_price) }))}
+          openedAt={session.opened_at}
+          onClose={() => setShowCloseModal(false)}
+          onClosed={() => { setShowCloseModal(false); fetchSession(); }}
+        />
+      )}
     </div>
   );
 };
