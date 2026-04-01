@@ -187,7 +187,7 @@ const StaffDashboard = () => {
   };
 
   const formatTime = (isoString: string) => new Date(isoString).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  const formatDate = (isoString: string) => new Date(isoString).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  const formatDateTime = (isoString: string) => new Date(isoString).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
   const getElapsed = (openedAt: string) => {
     const diff = Date.now() - new Date(openedAt).getTime();
