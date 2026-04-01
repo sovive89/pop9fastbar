@@ -114,15 +114,6 @@ const StaffDashboard = () => {
     return () => { supabase.removeChannel(channel); };
   }, [fetchSessionOrders]);
 
-  const closeSession = async (id: string) => {
-    const { error } = await supabase
-      .from('sessions')
-      .update({ status: 'closed', closed_at: new Date().toISOString() })
-      .eq('id', id);
-    if (error) toast({ title: 'Erro ao encerrar comanda', variant: 'destructive' });
-    else { toast({ title: 'Comanda encerrada!' }); fetchAll(); }
-  };
-
   const reopenSession = async (id: string) => {
     const { error } = await supabase
       .from('sessions')
