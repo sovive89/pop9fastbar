@@ -229,14 +229,11 @@ const StaffDashboard = () => {
         <CardHeader className="p-5 pb-3 space-y-0">
           <div className="flex items-start justify-between">
             <div className="space-y-1 flex-1 min-w-0">
-              <button
-                onClick={() => {
-                  if (isActive && client) {
-                    setOrderModal({ sessionId: session.id, clientId: client.id, clientName: client.client_name });
-                  }
-                }}
-                className="text-left group/name"
-              >
+              <div className="text-left">
+                <CardTitle className="text-lg font-bold text-white group-hover:text-[#FF8A00] transition-colors truncate max-w-[180px]">
+                  {client?.client_name || 'Sem Nome'}
+                </CardTitle>
+              </div>
                 <CardTitle className="text-lg font-bold text-white group-hover/name:text-[#FF8A00] transition-colors truncate max-w-[180px] cursor-pointer">
                   {client?.client_name || 'Sem Nome'}
                 </CardTitle>
