@@ -317,7 +317,13 @@ const StaffDashboard = () => {
               </Button>
             )}
             {isActive ? (
-              <Button onClick={() => closeSession(session.id)} size="sm" className="bg-white text-black hover:bg-white/90 rounded-xl h-9 text-[10px] font-bold gap-1">
+              <Button onClick={() => setCloseModal({
+                sessionId: session.id,
+                clientName: client?.client_name || 'Sem Nome',
+                total,
+                items: allItems.map(it => ({ name: it.menu_item?.name || '', quantity: it.quantity, unitPrice: Number(it.unit_price) })),
+                openedAt: session.opened_at,
+              })} size="sm" className="bg-white text-black hover:bg-white/90 rounded-xl h-9 text-[10px] font-bold gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Fechar
               </Button>
             ) : (
