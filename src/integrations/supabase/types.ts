@@ -87,6 +87,8 @@ export type Database = {
           name: string
           price: number
           sort_order: number
+          stock_alert_threshold: number
+          stock_quantity: number
           updated_at: string
         }
         Insert: {
@@ -99,6 +101,8 @@ export type Database = {
           name: string
           price?: number
           sort_order?: number
+          stock_alert_threshold?: number
+          stock_quantity?: number
           updated_at?: string
         }
         Update: {
@@ -111,6 +115,8 @@ export type Database = {
           name?: string
           price?: number
           sort_order?: number
+          stock_alert_threshold?: number
+          stock_quantity?: number
           updated_at?: string
         }
         Relationships: [
@@ -341,6 +347,50 @@ export type Database = {
         }
         Relationships: []
       }
+      stock_movements: {
+        Row: {
+          created_at: string
+          id: string
+          menu_item_id: string
+          movement_type: string
+          new_stock: number
+          performed_by: string | null
+          previous_stock: number
+          quantity: number
+          reason: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          menu_item_id: string
+          movement_type: string
+          new_stock: number
+          performed_by?: string | null
+          previous_stock: number
+          quantity: number
+          reason?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          menu_item_id?: string
+          movement_type?: string
+          new_stock?: number
+          performed_by?: string | null
+          previous_stock?: number
+          quantity?: number
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -367,6 +417,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      decrement_stock: {
+        Args: {
+          _menu_item_id: string
+          _performed_by?: string
+          _quantity: number
+        }
+        Returns: number
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
