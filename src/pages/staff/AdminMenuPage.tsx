@@ -79,7 +79,7 @@ const AdminMenuPage = () => {
     fetchData();
   };
 
-  const resetForm = () => { setShowForm(false); setEditingCategory(null); setEditingItem(null); setCatName(''); setCatDesc(''); setItemName(''); setItemDesc(''); setItemPrice(''); setItemCategoryId(''); setItemImage(''); };
+  const resetForm = () => { setShowForm(false); setEditingCategory(null); setEditingItem(null); setCatName(''); setCatDesc(''); setItemName(''); setItemDesc(''); setItemPrice(''); setItemCategoryId(''); setItemImage(''); setItemStock('-1'); setItemStockAlert('5'); };
 
   const startEditCategory = (cat: MenuCategory) => { setActiveTab('categories'); setEditingCategory(cat); setCatName(cat.name); setCatDesc(cat.description || ''); setShowForm(true); };
   const startEditItem = (item: MenuItem) => { setActiveTab('items'); setEditingItem(item); setItemName(item.name); setItemDesc(item.description || ''); setItemPrice(item.price.toString()); setItemCategoryId(item.category_id); setItemImage(item.image_url || ''); setShowForm(true); };
