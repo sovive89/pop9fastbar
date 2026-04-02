@@ -234,6 +234,11 @@ const ClientOrderInner = () => {
     }));
 
     await supabase.from('order_items').insert(orderItems);
+
+    // Decrement stock for each item
+    for (const ci of cartItems) {
+      await supabase.rpc('decrement_stock', { _menu_item_id: ci.menuItem.id, _quantity: ci.quantity });
+    }
     clearCart();
     setSubmitting(false);
     toast({ title: 'Pedido enviado! 🎉', description: 'Acompanhe o status na aba Pedidos.' });
@@ -390,41 +395,52 @@ const ClientOrderInner = () => {
                 const itemIngredients = ingredients.filter(i => i.menu_item_id === item.id);
                 const hasCustomization = itemIngredients.length > 0;
 
+                    const stock = (item as any).stock_quantity ?? -1;
+                const isOutOfStock = stock === 0;
+                const isLowStock = stock !== -1 && stock <= ((item as any).stock_alert_threshold ?? 5) && stock > 0;
+
                 return (
                   <button
                     key={item.id}
-                    onClick={() => hasCustomization ? setDetailItem(item) : undefined}
-                    className="glass rounded-2xl overflow-hidden flex text-left animate-slide-up hover:border-primary/20 transition-all group"
+                    onClick={() => !isOutOfStock && hasCustomization ? setDetailItem(item) : undefined}
+                    className={`glass rounded-2xl overflow-hidden flex text-left animate-slide-up hover:border-primary/20 transition-all group ${isOutOfStock ? 'opacity-50 pointer-events-none' : ''}`}
                     style={{ animationDelay: `${idx * 0.03}s` }}
+                    disabled={isOutOfStock}
                   >
                     {item.image_url && (
                       <img src={item.image_url} alt={item.name} className="w-24 h-24 object-cover flex-shrink-0" loading="lazy" />
                     )}
                     <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
                       <div>
-                        <p className="font-medium text-foreground text-sm truncate">{item.name}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-medium text-foreground text-sm truncate">{item.name}</p>
+                          {isOutOfStock && <Badge variant="destructive" className="text-[8px] px-1 py-0">Esgotado</Badge>}
+                          {isLowStock && <Badge className="text-[8px] px-1 py-0 bg-yellow-500/15 text-yellow-400 border-yellow-500/20">Últimas un.</Badge>}
+                        </div>
                         {item.description && (
                           <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{item.description}</p>
                         )}
                       </div>
                       <div className="flex items-center justify-between mt-2">
                         <p className="text-sm font-bold text-primary">R$ {Number(item.price).toFixed(2)}</p>
-                        <Button
-                          size="sm"
-                          className="h-8 rounded-xl gap-1 text-xs"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (hasCustomization) {
-                              setDetailItem(item);
-                            } else {
-                              addItem(item);
-                              toast({ title: `${item.name} adicionado!` });
-                            }
-                          }}
-                        >
-                          <Plus className="w-3 h-3" />
-                          {hasCustomization ? 'Personalizar' : 'Adicionar'}
-                        </Button>
+                        {!isOutOfStock && (
+                          <Button
+                            size="sm"
+                            className="h-8 rounded-xl gap-1 text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (hasCustomization) {
+                                setDetailItem(item);
+                              } else {
+                                addItem(item);
+                                toast({ title: `${item.name} adicionado!` });
+                              }
+                            }}
+                          >
+                            <Plus className="w-3 h-3" />
+                            {hasCustomization ? 'Personalizar' : 'Adicionar'}
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </button>

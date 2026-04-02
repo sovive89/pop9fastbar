@@ -18,6 +18,7 @@ import ReportsPage from "./pages/manager/ReportsPage";
 import SettingsPage from "./pages/manager/SettingsPage";
 import AdvancedReportsPage from "./pages/manager/AdvancedReportsPage";
 import CRMPage from "./pages/manager/CRMPage";
+import StockPage from "./pages/manager/StockPage";
 import ClientHome from "./pages/client/ClientHome";
 import ClientOrder from "./pages/client/ClientOrder";
 import ClientRegistration from "./pages/client/ClientRegistration";
@@ -81,6 +82,7 @@ const App = () => {
                 <Route path="configuracoes" element={<ProtectedRoute allowedRoles={['admin']}><SettingsPage /></ProtectedRoute>} />
                 <Route path="relatorios-avancados" element={<ProtectedRoute allowedRoles={['admin']}><AdvancedReportsPage /></ProtectedRoute>} />
                 <Route path="crm" element={<ProtectedRoute allowedRoles={['admin']}><CRMPage /></ProtectedRoute>} />
+                <Route path="estoque" element={<ProtectedRoute allowedRoles={['admin']}><StockPage /></ProtectedRoute>} />
               </Route>
 
               <Route path="/staff/*" element={<Navigate to="/gestor" replace />} />
