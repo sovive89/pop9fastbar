@@ -144,6 +144,16 @@ const AdminMenuPage = () => {
                   {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
                 <Input placeholder="URL da imagem (opcional)" value={itemImage} onChange={e => setItemImage(e.target.value)} className="rounded-xl bg-secondary/30" />
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-[10px] text-muted-foreground uppercase">Estoque (-1 = ∞)</Label>
+                    <Input type="number" value={itemStock} onChange={e => setItemStock(e.target.value)} className="rounded-xl bg-secondary/30" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] text-muted-foreground uppercase">Alerta mínimo</Label>
+                    <Input type="number" value={itemStockAlert} onChange={e => setItemStockAlert(e.target.value)} className="rounded-xl bg-secondary/30" />
+                  </div>
+                </div>
                 <div className="flex gap-2">
                   <Button onClick={saveItem} className="flex-1 rounded-xl">Salvar</Button>
                   <Button variant="ghost" onClick={resetForm} className="rounded-xl">Cancelar</Button>
