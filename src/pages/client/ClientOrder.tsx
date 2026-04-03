@@ -166,7 +166,7 @@ const ClientOrderInner = () => {
       if (!sessionId || !clientToken) { setSessionValid(false); return; }
       const { data: session } = await supabase.from('sessions').select('status').eq('id', sessionId).maybeSingle();
       if (!session || session.status !== 'active') { setSessionValid(false); return; }
-      const { data: client } = await supabase.from('session_clients').select('*').eq('session_id', sessionId).eq('client_token', clientToken).maybeSingle();
+      const { data: client } = await supabase.from('session_clients').select('id, client_name, client_token, session_id, joined_at').eq('session_id', sessionId).eq('client_token', clientToken).maybeSingle();
       if (!client) { setSessionValid(false); return; }
       setClientName(client.client_name);
       setClientId(client.id);
