@@ -226,6 +226,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "orders_session_client_id_fkey"
+            columns: ["session_client_id"]
+            isOneToOne: false
+            referencedRelation: "session_clients_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "orders_session_id_fkey"
             columns: ["session_id"]
             isOneToOne: false
@@ -414,7 +421,38 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      session_clients_public: {
+        Row: {
+          client_name: string | null
+          client_token: string | null
+          id: string | null
+          joined_at: string | null
+          session_id: string | null
+        }
+        Insert: {
+          client_name?: string | null
+          client_token?: string | null
+          id?: string | null
+          joined_at?: string | null
+          session_id?: string | null
+        }
+        Update: {
+          client_name?: string | null
+          client_token?: string | null
+          id?: string | null
+          joined_at?: string | null
+          session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_clients_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       decrement_stock: {
