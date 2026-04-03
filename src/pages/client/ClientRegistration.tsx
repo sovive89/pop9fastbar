@@ -61,20 +61,21 @@ const ClientRegistration = () => {
     setLoading(true);
 
     try {
-      let targetSessionId = urlSessionId;
+      const targetSessionId = urlSessionId;
 
       if (!targetSessionId) {
-        const { data: newSession, error: sessionError } = await supabase
-          .from('sessions')
-          .insert({
-            status: 'active',
-            opened_at: new Date().toISOString(),
-          })
-          .select()
-          .single();
+        throw new Error('Comanda não encontrada. Peça ao atendente para abrir uma comanda.');
+      }
 
-        if (sessionError || !newSession) throw new Error('Erro ao abrir comanda');
-        targetSessionId = newSession.id;
+      // Verify session is active
+      const { data: session } = await supabase
+        .from('sessions')
+        .select('status')
+        .eq('id', targetSessionId)
+        .maybeSingle();
+
+      if (!session || session.status !== 'active') {
+        throw new Error('Esta comanda não está ativa. Peça ao atendente para verificar.');
       }
 
       const insertData: any = {
