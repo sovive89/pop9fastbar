@@ -19,6 +19,7 @@ import OrderScanner from '@/components/OrderScanner';
 import StaffOrderModal from '@/components/StaffOrderModal';
 import CloseSessionModal from '@/components/CloseSessionModal';
 import pop9Logo from '@/assets/pop9-logo.png';
+import { useStockAlerts } from '@/hooks/useStockAlerts';
 
 interface SessionOrderItem {
   id: string;
