@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Clock, CheckCircle2, Volume2, VolumeX, BellRing } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Order, OrderItem, MenuItem } from '@/types';
+import { useStockAlerts } from '@/hooks/useStockAlerts';
 
 const KitchenView = () => {
   const { toast } = useToast();

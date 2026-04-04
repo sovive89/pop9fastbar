@@ -51,6 +51,7 @@ const StaffDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, role, signOut } = useAuth();
+  useStockAlerts();
 
   const [sessions, setSessions] = useState<(Session & { clients: SessionClient[] })[]>([]);
   const [closedSessions, setClosedSessions] = useState<(Session & { clients: SessionClient[] })[]>([]);
