@@ -104,10 +104,17 @@ const StockPage = () => {
     prevAlertItemsRef.current = lowItems.map(i => i.id);
   }, [items, alertsEnabled, alertsDismissed, toast]);
 
-  // Auto-refresh
+  // Realtime subscription for instant updates
   useEffect(() => {
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
+    const channel = supabase
+      .channel('stock-page-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'menu_items' },
+        () => fetchData()
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, [fetchData]);
 
   const totalTracked = items.filter(i => (i.stock_quantity ?? -1) !== -1).length;
