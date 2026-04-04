@@ -9,6 +9,7 @@ import { useStockAlerts } from '@/hooks/useStockAlerts';
 
 const KitchenView = () => {
   const { toast } = useToast();
+  useStockAlerts();
   const [orders, setOrders] = useState<(Order & { items: (OrderItem & { menu_item: MenuItem })[] })[]>([]);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [alertActive, setAlertActive] = useState(false);
