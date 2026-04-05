@@ -85,6 +85,7 @@ const App = () => {
                 <Route path="estoque" element={<ProtectedRoute allowedRoles={['admin']}><StockPage /></ProtectedRoute>} />
               </Route>
 
+              <Route path="/estoque" element={<Navigate to="/gestor/estoque" replace />} />
               <Route path="/staff/*" element={<Navigate to="/gestor" replace />} />
               <Route path="/abrir" element={<ClientRegistration />} />
               <Route path="/order/:sessionId" element={<ClientRegistration />} />
