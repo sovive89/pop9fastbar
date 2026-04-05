@@ -3,11 +3,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import {
-  LogOut, Clock, Plus, Printer, CheckCircle2, 
-  LayoutDashboard, ShoppingBag, Users, Settings, BarChart3,
-  Search, Flame, User as UserIcon, QrCode, RotateCcw,
+  Clock, Plus, Printer, CheckCircle2, 
+  Search, User as UserIcon, QrCode, RotateCcw,
   Wine, ChevronDown, ChevronUp, ExternalLink, Hash, XCircle,
-  LayoutGrid, List, Package
+  LayoutGrid, List
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,8 +17,8 @@ import type { Session, SessionClient } from '@/types';
 import OrderScanner from '@/components/OrderScanner';
 import StaffOrderModal from '@/components/StaffOrderModal';
 import CloseSessionModal from '@/components/CloseSessionModal';
-import pop9Logo from '@/assets/pop9-logo.png';
 import { useStockAlerts } from '@/hooks/useStockAlerts';
+import { ManagerSidebarTrigger } from '@/components/ManagerSidebar';
 
 interface SessionOrderItem {
   id: string;
