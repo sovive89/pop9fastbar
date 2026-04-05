@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
-  UserPlus, Search, Pencil, Trash2, Key, Shield, ShieldCheck,
+  UserPlus, Search, Trash2, Key, Shield, ShieldCheck,
   UtensilsCrossed, ChefHat, Users as UsersIcon, Eye, EyeOff, Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
