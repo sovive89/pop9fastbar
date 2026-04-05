@@ -49,7 +49,7 @@ const statusLabel: Record<string, { label: string; color: string }> = {
 const StaffDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, role, signOut } = useAuth();
+  const { user } = useAuth();
   useStockAlerts();
 
   const [sessions, setSessions] = useState<(Session & { clients: SessionClient[] })[]>([]);
