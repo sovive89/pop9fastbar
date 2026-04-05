@@ -9,7 +9,7 @@ import {
   Package, AlertTriangle, TrendingDown, TrendingUp,
   RefreshCw, Search, Plus, X, CheckCircle2, XCircle,
   ArrowUpDown, BarChart3, ClipboardCheck, Boxes,
-  Factory, Edit, Trash2
+  Factory, Edit, Trash2, Truck, Calendar, FileText, Phone, Mail, MapPin, Building2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ManagerSidebarTrigger } from '@/components/ManagerSidebar';
@@ -25,6 +25,7 @@ interface Product {
   brand: string | null;
   unit_of_measure: string;
   supplier: string | null;
+  supplier_id: string | null;
   cost_per_lot: number;
   lot_size: number;
   cost_per_unit: number;
@@ -55,6 +56,7 @@ interface ProductionRecipe {
   quantity_used: number;
   unit_of_measure: string;
   notes: string | null;
+  produced_at: string | null;
 }
 
 interface MenuItem {
@@ -66,18 +68,48 @@ interface MenuItem {
   price: number;
 }
 
-type MainTab = 'products' | 'production' | 'legacy' | 'reports';
+interface Supplier {
+  id: string;
+  name: string;
+  contact_name: string | null;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  cnpj: string | null;
+  notes: string | null;
+  is_active: boolean;
+}
+
+interface PurchaseEntry {
+  id: string;
+  product_id: string;
+  supplier_id: string | null;
+  quantity: number;
+  unit_of_measure: string;
+  cost_total: number;
+  cost_per_unit: number;
+  lot_number: string | null;
+  invoice_number: string | null;
+  purchase_date: string;
+  notes: string | null;
+  created_at: string;
+}
+
+type MainTab = 'products' | 'purchases' | 'suppliers' | 'production' | 'legacy' | 'reports';
 
 const UNITS = ['un', 'kg', 'g', 'L', 'ml', 'cx', 'pct', 'lata', 'garrafa', 'dose', 'fatia'];
 
 const StockPage = () => {
   const { toast } = useToast();
 
-  // Products
   const [products, setProducts] = useState<Product[]>([]);
   const [movements, setMovements] = useState<ProductMovement[]>([]);
   const [recipes, setRecipes] = useState<ProductionRecipe[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [purchases, setPurchases] = useState<PurchaseEntry[]>([]);
 
   const [mainTab, setMainTab] = useState<MainTab>('products');
   const [search, setSearch] = useState('');
@@ -88,7 +120,7 @@ const StockPage = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productForm, setProductForm] = useState({
     name: '', description: '', brand: '', unit_of_measure: 'un',
-    supplier: '', cost_per_lot: '', lot_size: '1', category: 'geral',
+    supplier: '', supplier_id: '', cost_per_lot: '', lot_size: '1', category: 'geral',
     sku: '', barcode: '', min_stock: '0', current_stock: '0'
   });
 
@@ -103,23 +135,44 @@ const StockPage = () => {
   // Recipe form
   const [showRecipeForm, setShowRecipeForm] = useState(false);
   const [recipeForm, setRecipeForm] = useState({
-    menu_item_id: '', product_id: '', quantity_used: '', unit_of_measure: 'un', notes: ''
+    menu_item_id: '', product_id: '', quantity_used: '', unit_of_measure: 'un', notes: '', produced_at: new Date().toISOString().slice(0, 16)
   });
+
+  // Supplier form
+  const [showSupplierForm, setShowSupplierForm] = useState(false);
+  const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
+  const [supplierForm, setSupplierForm] = useState({
+    name: '', contact_name: '', phone: '', email: '', address: '', city: '', state: '', cnpj: '', notes: ''
+  });
+
+  // Purchase entry form
+  const [showPurchaseForm, setShowPurchaseForm] = useState(false);
+  const [purchaseForm, setPurchaseForm] = useState({
+    product_id: '', supplier_id: '', quantity: '', unit_of_measure: 'un',
+    cost_total: '', lot_number: '', invoice_number: '', purchase_date: new Date().toISOString().slice(0, 16), notes: ''
+  });
+
+  // Purchase search
+  const [purchaseSearch, setPurchaseSearch] = useState('');
 
   // Reports
   const [reportPeriod, setReportPeriod] = useState<'today' | '7d' | '30d'>('7d');
 
   const fetchData = useCallback(async () => {
-    const [prodRes, movRes, recRes, menuRes] = await Promise.all([
+    const [prodRes, movRes, recRes, menuRes, supRes, purRes] = await Promise.all([
       supabase.from('products').select('*').order('name'),
       supabase.from('product_movements').select('*').order('created_at', { ascending: false }).limit(200),
       supabase.from('production_recipes').select('*'),
       supabase.from('menu_items').select('id, name, stock_quantity, stock_alert_threshold, is_active, price').order('name'),
+      supabase.from('suppliers').select('*').order('name'),
+      supabase.from('purchase_entries').select('*').order('purchase_date', { ascending: false }).limit(500),
     ]);
     if (prodRes.data) setProducts(prodRes.data as any);
     if (movRes.data) setMovements(movRes.data as any);
     if (recRes.data) setRecipes(recRes.data as any);
     if (menuRes.data) setMenuItems(menuRes.data as MenuItem[]);
+    if (supRes.data) setSuppliers(supRes.data as any);
+    if (purRes.data) setPurchases(purRes.data as any);
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
@@ -128,6 +181,8 @@ const StockPage = () => {
     const ch = supabase.channel('stock-rt')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => fetchData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'product_movements' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'purchase_entries' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'suppliers' }, () => fetchData())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [fetchData]);
@@ -136,9 +191,9 @@ const StockPage = () => {
   const totalProducts = products.length;
   const lowStock = products.filter(p => p.current_stock > 0 && p.current_stock <= p.min_stock).length;
   const outOfStock = products.filter(p => p.current_stock === 0).length;
-  const totalValue = products.reduce((s, p) => s + p.current_stock * p.cost_per_unit, 0);
+  const totalValue = products.reduce((s, p) => s + p.current_stock * (p.cost_per_unit || 0), 0);
 
-  // Filtered
+  // Filtered products
   const filteredProducts = products.filter(p => {
     if (search && !p.name.toLowerCase().includes(search.toLowerCase()) && !p.brand?.toLowerCase().includes(search.toLowerCase())) return false;
     if (filter === 'low') return p.current_stock > 0 && p.current_stock <= p.min_stock;
@@ -148,7 +203,7 @@ const StockPage = () => {
 
   // --- Product CRUD ---
   const resetProductForm = () => {
-    setProductForm({ name: '', description: '', brand: '', unit_of_measure: 'un', supplier: '', cost_per_lot: '', lot_size: '1', category: 'geral', sku: '', barcode: '', min_stock: '0', current_stock: '0' });
+    setProductForm({ name: '', description: '', brand: '', unit_of_measure: 'un', supplier: '', supplier_id: '', cost_per_lot: '', lot_size: '1', category: 'geral', sku: '', barcode: '', min_stock: '0', current_stock: '0' });
     setEditingProduct(null);
   };
 
@@ -156,7 +211,7 @@ const StockPage = () => {
     setEditingProduct(p);
     setProductForm({
       name: p.name, description: p.description || '', brand: p.brand || '',
-      unit_of_measure: p.unit_of_measure, supplier: p.supplier || '',
+      unit_of_measure: p.unit_of_measure, supplier: p.supplier || '', supplier_id: p.supplier_id || '',
       cost_per_lot: String(p.cost_per_lot), lot_size: String(p.lot_size),
       category: p.category || 'geral', sku: p.sku || '', barcode: p.barcode || '',
       min_stock: String(p.min_stock), current_stock: String(p.current_stock)
@@ -166,12 +221,13 @@ const StockPage = () => {
 
   const saveProduct = async () => {
     if (!productForm.name.trim()) { toast({ title: 'Informe o nome do produto', variant: 'destructive' }); return; }
-    const payload = {
+    const payload: any = {
       name: productForm.name.trim(),
       description: productForm.description || null,
       brand: productForm.brand || null,
       unit_of_measure: productForm.unit_of_measure,
       supplier: productForm.supplier || null,
+      supplier_id: productForm.supplier_id || null,
       cost_per_lot: parseFloat(productForm.cost_per_lot) || 0,
       lot_size: parseInt(productForm.lot_size) || 1,
       category: productForm.category || 'geral',
@@ -250,16 +306,111 @@ const StockPage = () => {
       quantity_used: parseFloat(recipeForm.quantity_used),
       unit_of_measure: recipeForm.unit_of_measure,
       notes: recipeForm.notes || null,
+      produced_at: recipeForm.produced_at ? new Date(recipeForm.produced_at).toISOString() : new Date().toISOString(),
     });
     toast({ title: 'Receita cadastrada!' });
     setShowRecipeForm(false);
-    setRecipeForm({ menu_item_id: '', product_id: '', quantity_used: '', unit_of_measure: 'un', notes: '' });
+    setRecipeForm({ menu_item_id: '', product_id: '', quantity_used: '', unit_of_measure: 'un', notes: '', produced_at: new Date().toISOString().slice(0, 16) });
     fetchData();
   };
 
   const deleteRecipe = async (id: string) => {
     await supabase.from('production_recipes').delete().eq('id', id);
     toast({ title: 'Receita removida' });
+    fetchData();
+  };
+
+  // --- Suppliers ---
+  const resetSupplierForm = () => {
+    setSupplierForm({ name: '', contact_name: '', phone: '', email: '', address: '', city: '', state: '', cnpj: '', notes: '' });
+    setEditingSupplier(null);
+  };
+
+  const openEditSupplier = (s: Supplier) => {
+    setEditingSupplier(s);
+    setSupplierForm({
+      name: s.name, contact_name: s.contact_name || '', phone: s.phone || '',
+      email: s.email || '', address: s.address || '', city: s.city || '',
+      state: s.state || '', cnpj: s.cnpj || '', notes: s.notes || ''
+    });
+    setShowSupplierForm(true);
+  };
+
+  const saveSupplier = async () => {
+    if (!supplierForm.name.trim()) { toast({ title: 'Informe o nome do fornecedor', variant: 'destructive' }); return; }
+    const payload = {
+      name: supplierForm.name.trim(),
+      contact_name: supplierForm.contact_name || null,
+      phone: supplierForm.phone || null,
+      email: supplierForm.email || null,
+      address: supplierForm.address || null,
+      city: supplierForm.city || null,
+      state: supplierForm.state || null,
+      cnpj: supplierForm.cnpj || null,
+      notes: supplierForm.notes || null,
+    };
+    if (editingSupplier) {
+      await supabase.from('suppliers').update(payload).eq('id', editingSupplier.id);
+      toast({ title: 'Fornecedor atualizado!' });
+    } else {
+      await supabase.from('suppliers').insert(payload);
+      toast({ title: 'Fornecedor cadastrado!' });
+    }
+    setShowSupplierForm(false);
+    resetSupplierForm();
+    fetchData();
+  };
+
+  const deleteSupplier = async (id: string) => {
+    await supabase.from('suppliers').delete().eq('id', id);
+    toast({ title: 'Fornecedor removido' });
+    fetchData();
+  };
+
+  // --- Purchase entries ---
+  const savePurchase = async () => {
+    if (!purchaseForm.product_id || !purchaseForm.quantity) {
+      toast({ title: 'Preencha produto e quantidade', variant: 'destructive' }); return;
+    }
+    const qty = parseFloat(purchaseForm.quantity);
+    const costTotal = parseFloat(purchaseForm.cost_total) || 0;
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    await supabase.from('purchase_entries').insert({
+      product_id: purchaseForm.product_id,
+      supplier_id: purchaseForm.supplier_id || null,
+      quantity: qty,
+      unit_of_measure: purchaseForm.unit_of_measure,
+      cost_total: costTotal,
+      lot_number: purchaseForm.lot_number || null,
+      invoice_number: purchaseForm.invoice_number || null,
+      purchase_date: purchaseForm.purchase_date ? new Date(purchaseForm.purchase_date).toISOString() : new Date().toISOString(),
+      notes: purchaseForm.notes || null,
+      performed_by: user?.id || null,
+    });
+
+    // Also update product stock (entry movement)
+    const product = products.find(p => p.id === purchaseForm.product_id);
+    if (product) {
+      const prev = product.current_stock;
+      const newStock = prev + qty;
+      await supabase.from('products').update({ current_stock: newStock }).eq('id', product.id);
+      await supabase.from('product_movements').insert({
+        product_id: product.id,
+        movement_type: 'in',
+        quantity: qty,
+        previous_stock: prev,
+        new_stock: newStock,
+        reason: `Compra registrada${purchaseForm.lot_number ? ` - Lote: ${purchaseForm.lot_number}` : ''}${purchaseForm.invoice_number ? ` - NF: ${purchaseForm.invoice_number}` : ''}`,
+        lot_number: purchaseForm.lot_number || null,
+        performed_by: user?.id || null,
+      });
+    }
+
+    toast({ title: 'Entrada de compra registrada!' });
+    setShowPurchaseForm(false);
+    setPurchaseForm({ product_id: '', supplier_id: '', quantity: '', unit_of_measure: 'un', cost_total: '', lot_number: '', invoice_number: '', purchase_date: new Date().toISOString().slice(0, 16), notes: '' });
     fetchData();
   };
 
@@ -306,9 +457,9 @@ const StockPage = () => {
     };
   };
 
-  const formatDate = (d: string) => {
+  const formatDateTime = (d: string) => {
     const dt = new Date(d);
-    return dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    return dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   };
 
   const costPerUnit = (lot: string, size: string) => {
@@ -316,6 +467,15 @@ const StockPage = () => {
     const s = parseInt(size) || 1;
     return s > 0 ? (l / s).toFixed(2) : '0.00';
   };
+
+  // Filtered purchases
+  const filteredPurchases = purchases.filter(p => {
+    if (!purchaseSearch) return true;
+    const product = products.find(pr => pr.id === p.product_id);
+    const supplier = suppliers.find(s => s.id === p.supplier_id);
+    const q = purchaseSearch.toLowerCase();
+    return (product?.name.toLowerCase().includes(q) || supplier?.name.toLowerCase().includes(q) || p.lot_number?.toLowerCase().includes(q) || p.invoice_number?.toLowerCase().includes(q));
+  });
 
   return (
     <div className="min-h-screen bg-[#0F0F0F] text-white">
@@ -364,8 +524,10 @@ const StockPage = () => {
         <div className="flex gap-1.5 overflow-x-auto pb-1">
           {([
             { key: 'products' as MainTab, label: 'Produtos', icon: Package },
-            { key: 'production' as MainTab, label: 'Produção & Porcionamento', icon: Factory },
-            { key: 'legacy' as MainTab, label: 'Estoque Cardápio', icon: ClipboardCheck },
+            { key: 'purchases' as MainTab, label: 'Entradas', icon: TrendingUp },
+            { key: 'suppliers' as MainTab, label: 'Fornecedores', icon: Truck },
+            { key: 'production' as MainTab, label: 'Produção', icon: Factory },
+            { key: 'legacy' as MainTab, label: 'Cardápio', icon: ClipboardCheck },
             { key: 'reports' as MainTab, label: 'Relatórios', icon: BarChart3 },
           ]).map(t => (
             <button key={t.key} onClick={() => setMainTab(t.key)} className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${mainTab === t.key ? 'bg-[#FF8A00] text-black' : 'bg-white/5 text-white/40 hover:text-white'}`}>
@@ -407,6 +569,7 @@ const StockPage = () => {
                 {filteredProducts.map(product => {
                   const isLow = product.current_stock > 0 && product.current_stock <= product.min_stock;
                   const isOut = product.current_stock === 0;
+                  const sup = suppliers.find(s => s.id === product.supplier_id);
                   return (
                     <div key={product.id} className={`bg-[#1A1A1A] rounded-2xl p-4 border transition-all ${isOut ? 'border-red-500/20' : isLow ? 'border-yellow-500/20' : 'border-white/5'}`}>
                       <div className="flex items-start gap-3">
@@ -416,11 +579,12 @@ const StockPage = () => {
                             {product.brand && <Badge variant="outline" className="text-[9px] text-white/40 border-white/10 py-0">{product.brand}</Badge>}
                           </div>
                           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-white/40">
-                            {product.supplier && <span>📦 {product.supplier}</span>}
+                            {sup && <span>🏭 {sup.name}</span>}
+                            {!sup && product.supplier && <span>📦 {product.supplier}</span>}
                             <span>📐 {product.unit_of_measure}</span>
                             {product.category && <span>🏷️ {product.category}</span>}
-                            <span>💰 R$ {product.cost_per_unit.toFixed(2)}/un</span>
-                            {product.lot_size > 1 && <span>📦 Lote: {product.lot_size} × R$ {product.cost_per_lot.toFixed(2)}</span>}
+                            <span>💰 R$ {(product.cost_per_unit || 0).toFixed(2)}/un</span>
+                            {product.lot_size > 1 && <span>📦 Lote: {product.lot_size} × R$ {(product.cost_per_lot || 0).toFixed(2)}</span>}
                             {product.sku && <span>SKU: {product.sku}</span>}
                           </div>
                           {product.description && <p className="text-[10px] text-white/25 mt-1 truncate">{product.description}</p>}
@@ -459,6 +623,128 @@ const StockPage = () => {
           </div>
         )}
 
+        {/* ===== PURCHASES TAB ===== */}
+        {mainTab === 'purchases' && (
+          <div className="space-y-4">
+            <div className="flex gap-2 items-center">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                <Input placeholder="Buscar por produto, fornecedor, lote ou NF..." value={purchaseSearch} onChange={e => setPurchaseSearch(e.target.value)} className="pl-10 bg-white/5 border-white/10 rounded-xl h-9" />
+              </div>
+              <Button onClick={() => { setPurchaseForm({ product_id: '', supplier_id: '', quantity: '', unit_of_measure: 'un', cost_total: '', lot_number: '', invoice_number: '', purchase_date: new Date().toISOString().slice(0, 16), notes: '' }); setShowPurchaseForm(true); }} size="sm" className="bg-[#FF8A00] text-black font-bold rounded-xl h-9 gap-1.5">
+                <Plus className="w-4 h-4" /> Nova Entrada
+              </Button>
+            </div>
+
+            {filteredPurchases.length === 0 ? (
+              <div className="text-center py-16">
+                <TrendingUp className="w-12 h-12 text-white/10 mx-auto mb-3" />
+                <p className="text-white/30 text-sm">Nenhuma entrada de compra registrada</p>
+                <p className="text-white/20 text-xs mt-1">Registre compras de lotes e unidades com data, fornecedor e NF</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {filteredPurchases.map(entry => {
+                  const product = products.find(p => p.id === entry.product_id);
+                  const supplier = suppliers.find(s => s.id === entry.supplier_id);
+                  return (
+                    <div key={entry.id} className="bg-[#1A1A1A] rounded-2xl p-4 border border-white/5">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+                          <TrendingUp className="w-5 h-5 text-green-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-bold text-white text-sm">{product?.name || 'Produto removido'}</p>
+                            <Badge variant="outline" className="text-[9px] text-green-400 border-green-500/20 py-0">+{entry.quantity} {entry.unit_of_measure}</Badge>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-white/40">
+                            <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{formatDateTime(entry.purchase_date)}</span>
+                            {supplier && <span className="flex items-center gap-1"><Truck className="w-3 h-3" />{supplier.name}</span>}
+                            {entry.lot_number && <span>📦 Lote: {entry.lot_number}</span>}
+                            {entry.invoice_number && <span className="flex items-center gap-1"><FileText className="w-3 h-3" />NF: {entry.invoice_number}</span>}
+                          </div>
+                          {entry.notes && <p className="text-[10px] text-white/25 mt-1">{entry.notes}</p>}
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-[#FF8A00]">R$ {(entry.cost_total || 0).toFixed(2)}</p>
+                          <p className="text-[9px] text-white/30">R$ {(entry.cost_per_unit || 0).toFixed(2)}/un</p>
+                          <p className="text-[9px] text-white/20 mt-1">{formatDateTime(entry.created_at)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ===== SUPPLIERS TAB ===== */}
+        {mainTab === 'suppliers' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold">Fornecedores</h2>
+                <p className="text-white/30 text-xs">Cadastro de fornecedores e informações de contato</p>
+              </div>
+              <Button onClick={() => { resetSupplierForm(); setShowSupplierForm(true); }} size="sm" className="bg-[#FF8A00] text-black font-bold rounded-xl gap-1.5">
+                <Plus className="w-4 h-4" /> Novo Fornecedor
+              </Button>
+            </div>
+
+            {suppliers.length === 0 ? (
+              <div className="text-center py-16">
+                <Truck className="w-12 h-12 text-white/10 mx-auto mb-3" />
+                <p className="text-white/30 text-sm">Nenhum fornecedor cadastrado</p>
+                <Button onClick={() => { resetSupplierForm(); setShowSupplierForm(true); }} className="mt-4 bg-[#FF8A00] text-black rounded-xl font-bold gap-2">
+                  <Plus className="w-4 h-4" /> Cadastrar Fornecedor
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {suppliers.map(s => {
+                  const productCount = products.filter(p => p.supplier_id === s.id).length;
+                  const purchaseCount = purchases.filter(p => p.supplier_id === s.id).length;
+                  return (
+                    <div key={s.id} className="bg-[#1A1A1A] rounded-2xl p-4 border border-white/5">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[#FF8A00]/10 flex items-center justify-center">
+                          <Building2 className="w-5 h-5 text-[#FF8A00]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-white text-sm">{s.name}</p>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-white/40 mt-1">
+                            {s.contact_name && <span>👤 {s.contact_name}</span>}
+                            {s.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{s.phone}</span>}
+                            {s.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{s.email}</span>}
+                            {s.cnpj && <span>📋 {s.cnpj}</span>}
+                            {(s.city || s.state) && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{[s.city, s.state].filter(Boolean).join(' - ')}</span>}
+                          </div>
+                          {s.address && <p className="text-[10px] text-white/20 mt-1">{s.address}</p>}
+                          {s.notes && <p className="text-[10px] text-white/15 mt-1 italic">{s.notes}</p>}
+                          <div className="flex gap-3 mt-2">
+                            <Badge variant="outline" className="text-[9px] border-white/10 text-white/30">{productCount} produtos</Badge>
+                            <Badge variant="outline" className="text-[9px] border-white/10 text-white/30">{purchaseCount} compras</Badge>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button size="sm" variant="ghost" className="h-7 w-7 px-0 text-white/20" onClick={() => openEditSupplier(s)}>
+                            <Edit className="w-3 h-3" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-7 w-7 px-0 text-white/20 hover:text-red-400" onClick={() => deleteSupplier(s.id)}>
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ===== PRODUCTION & PORTIONING TAB ===== */}
         {mainTab === 'production' && (
           <div className="space-y-4">
@@ -467,7 +753,7 @@ const StockPage = () => {
                 <h2 className="text-lg font-bold">Receitas de Produção</h2>
                 <p className="text-white/30 text-xs">Vincule produtos do estoque aos itens do cardápio</p>
               </div>
-              <Button onClick={() => setShowRecipeForm(true)} size="sm" className="bg-[#FF8A00] text-black font-bold rounded-xl gap-1.5">
+              <Button onClick={() => { setRecipeForm({ menu_item_id: '', product_id: '', quantity_used: '', unit_of_measure: 'un', notes: '', produced_at: new Date().toISOString().slice(0, 16) }); setShowRecipeForm(true); }} size="sm" className="bg-[#FF8A00] text-black font-bold rounded-xl gap-1.5">
                 <Plus className="w-4 h-4" /> Nova Receita
               </Button>
             </div>
@@ -480,7 +766,6 @@ const StockPage = () => {
               </div>
             ) : (
               <div className="space-y-2">
-                {/* Group recipes by menu item */}
                 {(() => {
                   const grouped: Record<string, ProductionRecipe[]> = {};
                   recipes.forEach(r => {
@@ -499,10 +784,15 @@ const StockPage = () => {
                             const product = products.find(p => p.id === r.product_id);
                             return (
                               <div key={r.id} className="flex items-center justify-between text-xs bg-white/5 rounded-xl px-3 py-2">
-                                <div>
+                                <div className="flex-1">
                                   <span className="font-medium text-white">{product?.name || '?'}</span>
                                   <span className="text-white/30 ml-2">{r.quantity_used} {r.unit_of_measure}</span>
                                   {r.notes && <span className="text-white/20 ml-2">({r.notes})</span>}
+                                  {r.produced_at && (
+                                    <span className="text-white/20 ml-2 flex items-center gap-1 inline-flex">
+                                      <Calendar className="w-3 h-3" />{formatDateTime(r.produced_at)}
+                                    </span>
+                                  )}
                                 </div>
                                 <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-white/20 hover:text-red-400" onClick={() => deleteRecipe(r.id)}>
                                   <Trash2 className="w-3 h-3" />
@@ -568,7 +858,6 @@ const StockPage = () => {
                   </button>
                 ))}
               </div>
-
               <div className="grid grid-cols-3 gap-2">
                 <Card className="bg-[#1A1A1A] border-white/5"><CardContent className="p-3 text-center">
                   <p className="text-lg font-bold">{totalMovements}</p><p className="text-[9px] text-white/30 uppercase">Movimentações</p>
@@ -580,7 +869,6 @@ const StockPage = () => {
                   <p className="text-lg font-bold text-red-400">-{totalOut}</p><p className="text-[9px] text-white/30 uppercase">Saídas</p>
                 </CardContent></Card>
               </div>
-
               {topConsumed.length > 0 && (
                 <Card className="bg-[#1A1A1A] border-white/5"><CardContent className="p-4">
                   <h3 className="text-sm font-bold mb-3">🔥 Mais consumidos</h3>
@@ -589,7 +877,6 @@ const StockPage = () => {
                   </ResponsiveContainer>
                 </CardContent></Card>
               )}
-
               {typeData.some(d => d.value > 0) && (
                 <Card className="bg-[#1A1A1A] border-white/5"><CardContent className="p-4">
                   <h3 className="text-sm font-bold mb-3">📊 Tipo de movimentação</h3>
@@ -598,7 +885,6 @@ const StockPage = () => {
                   </ResponsiveContainer>
                 </CardContent></Card>
               )}
-
               {dailyTrend.length > 0 && (
                 <Card className="bg-[#1A1A1A] border-white/5"><CardContent className="p-4">
                   <h3 className="text-sm font-bold mb-3">📈 Tendência diária</h3>
@@ -607,7 +893,6 @@ const StockPage = () => {
                   </ResponsiveContainer>
                 </CardContent></Card>
               )}
-
               {totalMovements === 0 && (
                 <div className="text-center py-12"><BarChart3 className="w-10 h-10 text-white/10 mx-auto mb-3" /><p className="text-white/30 text-sm">Sem dados para este período</p></div>
               )}
@@ -644,7 +929,10 @@ const StockPage = () => {
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[10px] text-white/30 uppercase tracking-widest">Fornecedor</Label>
-                  <Input value={productForm.supplier} onChange={e => setProductForm(p => ({ ...p, supplier: e.target.value }))} className="bg-white/5 border-white/10 rounded-xl" />
+                  <select value={productForm.supplier_id} onChange={e => { const s = suppliers.find(sup => sup.id === e.target.value); setProductForm(p => ({ ...p, supplier_id: e.target.value, supplier: s?.name || p.supplier })); }} className="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm text-white">
+                    <option value="" className="bg-[#1A1A1A]">Selecione...</option>
+                    {suppliers.map(s => <option key={s.id} value={s.id} className="bg-[#1A1A1A]">{s.name}</option>)}
+                  </select>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[10px] text-white/30 uppercase tracking-widest">Unidade de Medida</Label>
@@ -779,6 +1067,10 @@ const StockPage = () => {
                 </div>
               </div>
               <div className="space-y-1">
+                <Label className="text-[10px] text-white/30 uppercase tracking-widest flex items-center gap-1"><Calendar className="w-3 h-3" /> Data/Hora da Produção</Label>
+                <Input type="datetime-local" value={recipeForm.produced_at} onChange={e => setRecipeForm(p => ({ ...p, produced_at: e.target.value }))} className="bg-white/5 border-white/10 rounded-xl" />
+              </div>
+              <div className="space-y-1">
                 <Label className="text-[10px] text-white/30 uppercase tracking-widest">Observações</Label>
                 <Input value={recipeForm.notes} onChange={e => setRecipeForm(p => ({ ...p, notes: e.target.value }))} placeholder="Ex: Base para 1 porção" className="bg-white/5 border-white/10 rounded-xl" />
               </div>
@@ -787,6 +1079,143 @@ const StockPage = () => {
               <Button variant="ghost" onClick={() => setShowRecipeForm(false)} className="flex-1 rounded-xl h-11">Cancelar</Button>
               <Button onClick={saveRecipe} className="flex-1 bg-[#FF8A00] text-black font-bold rounded-xl h-11 gap-2">
                 <CheckCircle2 className="w-4 h-4" /> Cadastrar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== SUPPLIER FORM MODAL ===== */}
+      {showSupplierForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowSupplierForm(false)}>
+          <div className="w-full max-w-lg bg-[#1A1A1A] rounded-2xl border border-white/10 shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="p-6 border-b border-white/5 flex items-center justify-between">
+              <h3 className="font-bold text-lg">{editingSupplier ? 'Editar Fornecedor' : 'Novo Fornecedor'}</h3>
+              <Button variant="ghost" size="icon" onClick={() => setShowSupplierForm(false)}><X className="w-5 h-5" /></Button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-[10px] text-white/30 uppercase tracking-widest">Nome da Empresa *</Label>
+                  <Input value={supplierForm.name} onChange={e => setSupplierForm(p => ({ ...p, name: e.target.value }))} className="bg-white/5 border-white/10 rounded-xl" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-white/30 uppercase tracking-widest">Contato</Label>
+                  <Input value={supplierForm.contact_name} onChange={e => setSupplierForm(p => ({ ...p, contact_name: e.target.value }))} placeholder="Nome do contato" className="bg-white/5 border-white/10 rounded-xl" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-white/30 uppercase tracking-widest">CNPJ</Label>
+                  <Input value={supplierForm.cnpj} onChange={e => setSupplierForm(p => ({ ...p, cnpj: e.target.value }))} placeholder="00.000.000/0000-00" className="bg-white/5 border-white/10 rounded-xl" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-white/30 uppercase tracking-widest">Telefone</Label>
+                  <Input value={supplierForm.phone} onChange={e => setSupplierForm(p => ({ ...p, phone: e.target.value }))} placeholder="(00) 00000-0000" className="bg-white/5 border-white/10 rounded-xl" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-white/30 uppercase tracking-widest">E-mail</Label>
+                  <Input value={supplierForm.email} onChange={e => setSupplierForm(p => ({ ...p, email: e.target.value }))} placeholder="email@empresa.com" className="bg-white/5 border-white/10 rounded-xl" />
+                </div>
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-[10px] text-white/30 uppercase tracking-widest">Endereço</Label>
+                  <Input value={supplierForm.address} onChange={e => setSupplierForm(p => ({ ...p, address: e.target.value }))} className="bg-white/5 border-white/10 rounded-xl" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-white/30 uppercase tracking-widest">Cidade</Label>
+                  <Input value={supplierForm.city} onChange={e => setSupplierForm(p => ({ ...p, city: e.target.value }))} className="bg-white/5 border-white/10 rounded-xl" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-white/30 uppercase tracking-widest">Estado</Label>
+                  <Input value={supplierForm.state} onChange={e => setSupplierForm(p => ({ ...p, state: e.target.value }))} placeholder="UF" className="bg-white/5 border-white/10 rounded-xl" />
+                </div>
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-[10px] text-white/30 uppercase tracking-widest">Observações</Label>
+                  <Input value={supplierForm.notes} onChange={e => setSupplierForm(p => ({ ...p, notes: e.target.value }))} placeholder="Informações adicionais..." className="bg-white/5 border-white/10 rounded-xl" />
+                </div>
+              </div>
+            </div>
+            <div className="p-6 pt-0 flex gap-3">
+              <Button variant="ghost" onClick={() => setShowSupplierForm(false)} className="flex-1 rounded-xl h-11">Cancelar</Button>
+              <Button onClick={saveSupplier} className="flex-1 bg-[#FF8A00] text-black font-bold rounded-xl h-11 gap-2">
+                <CheckCircle2 className="w-4 h-4" /> {editingSupplier ? 'Salvar' : 'Cadastrar'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== PURCHASE ENTRY FORM MODAL ===== */}
+      {showPurchaseForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowPurchaseForm(false)}>
+          <div className="w-full max-w-lg bg-[#1A1A1A] rounded-2xl border border-white/10 shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="p-6 border-b border-white/5 flex items-center justify-between">
+              <h3 className="font-bold text-lg">📦 Registrar Entrada de Compra</h3>
+              <Button variant="ghost" size="icon" onClick={() => setShowPurchaseForm(false)}><X className="w-5 h-5" /></Button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-[10px] text-white/30 uppercase tracking-widest">Produto *</Label>
+                  <select value={purchaseForm.product_id} onChange={e => { const p = products.find(pr => pr.id === e.target.value); setPurchaseForm(f => ({ ...f, product_id: e.target.value, unit_of_measure: p?.unit_of_measure || f.unit_of_measure })); }} className="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm text-white">
+                    <option value="" className="bg-[#1A1A1A]">Selecione o produto...</option>
+                    {products.map(p => <option key={p.id} value={p.id} className="bg-[#1A1A1A]">{p.name} {p.brand ? `(${p.brand})` : ''}</option>)}
+                  </select>
+                </div>
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-[10px] text-white/30 uppercase tracking-widest">Fornecedor</Label>
+                  <select value={purchaseForm.supplier_id} onChange={e => setPurchaseForm(f => ({ ...f, supplier_id: e.target.value }))} className="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm text-white">
+                    <option value="" className="bg-[#1A1A1A]">Selecione...</option>
+                    {suppliers.map(s => <option key={s.id} value={s.id} className="bg-[#1A1A1A]">{s.name}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-white/30 uppercase tracking-widest">Quantidade *</Label>
+                  <Input type="number" value={purchaseForm.quantity} onChange={e => setPurchaseForm(f => ({ ...f, quantity: e.target.value }))} placeholder="0" className="bg-white/5 border-white/10 rounded-xl" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-white/30 uppercase tracking-widest">Unidade</Label>
+                  <select value={purchaseForm.unit_of_measure} onChange={e => setPurchaseForm(f => ({ ...f, unit_of_measure: e.target.value }))} className="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-sm text-white">
+                    {UNITS.map(u => <option key={u} value={u} className="bg-[#1A1A1A]">{u}</option>)}
+                  </select>
+                </div>
+
+                <div className="col-span-2 bg-white/5 rounded-xl p-3 space-y-3 border border-white/10">
+                  <p className="text-[10px] font-bold text-[#FF8A00] uppercase tracking-widest">💰 Custo da Compra</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-[9px] text-white/30">Valor Total (R$)</Label>
+                      <Input type="number" value={purchaseForm.cost_total} onChange={e => setPurchaseForm(f => ({ ...f, cost_total: e.target.value }))} placeholder="0.00" className="bg-white/5 border-white/10 rounded-lg h-9" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[9px] text-white/30">Custo Unitário</Label>
+                      <div className="h-9 flex items-center px-3 bg-[#FF8A00]/10 border border-[#FF8A00]/20 rounded-lg text-sm font-bold text-[#FF8A00]">
+                        R$ {purchaseForm.quantity && parseFloat(purchaseForm.quantity) > 0 ? ((parseFloat(purchaseForm.cost_total) || 0) / parseFloat(purchaseForm.quantity)).toFixed(2) : '0.00'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-white/30 uppercase tracking-widest">Nº do Lote</Label>
+                  <Input value={purchaseForm.lot_number} onChange={e => setPurchaseForm(f => ({ ...f, lot_number: e.target.value }))} placeholder="LOTE-2026-04" className="bg-white/5 border-white/10 rounded-xl" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-white/30 uppercase tracking-widest">Nota Fiscal</Label>
+                  <Input value={purchaseForm.invoice_number} onChange={e => setPurchaseForm(f => ({ ...f, invoice_number: e.target.value }))} placeholder="NF-00000" className="bg-white/5 border-white/10 rounded-xl" />
+                </div>
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-[10px] text-white/30 uppercase tracking-widest flex items-center gap-1"><Calendar className="w-3 h-3" /> Data e Hora da Compra *</Label>
+                  <Input type="datetime-local" value={purchaseForm.purchase_date} onChange={e => setPurchaseForm(f => ({ ...f, purchase_date: e.target.value }))} className="bg-white/5 border-white/10 rounded-xl" />
+                </div>
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-[10px] text-white/30 uppercase tracking-widest">Observações</Label>
+                  <Input value={purchaseForm.notes} onChange={e => setPurchaseForm(f => ({ ...f, notes: e.target.value }))} placeholder="Informações adicionais da compra..." className="bg-white/5 border-white/10 rounded-xl" />
+                </div>
+              </div>
+            </div>
+            <div className="p-6 pt-0 flex gap-3">
+              <Button variant="ghost" onClick={() => setShowPurchaseForm(false)} className="flex-1 rounded-xl h-11">Cancelar</Button>
+              <Button onClick={savePurchase} className="flex-1 bg-[#FF8A00] text-black font-bold rounded-xl h-11 gap-2">
+                <CheckCircle2 className="w-4 h-4" /> Registrar Entrada
               </Button>
             </div>
           </div>
