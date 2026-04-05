@@ -179,7 +179,7 @@ const SettingsPage = () => {
         <ManagerSidebarTrigger />
         <div>
           <h1 className="text-2xl font-black tracking-tighter">CONFIGURAÇÕES</h1>
-          <p className="text-white/40 text-xs font-bold uppercase tracking-widest">APIs, Impressoras & Links</p>
+          <p className="text-white/40 text-xs font-bold uppercase tracking-widest">APIs, Impressoras, Scanner & Links</p>
         </div>
       </header>
 
