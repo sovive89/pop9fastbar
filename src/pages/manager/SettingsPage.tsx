@@ -4,8 +4,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Settings, Key, Printer, Link as LinkIcon,
-  Copy, Eye, EyeOff, Plus, Trash2, Save, AlertCircle, CheckCircle2
+  Copy, Eye, EyeOff, Plus, Trash2, Save, AlertCircle, CheckCircle2,
+  QrCode
 } from 'lucide-react';
+import ScannerConfig from '@/components/ScannerConfig';
 import { ManagerSidebarTrigger } from '@/components/ManagerSidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
