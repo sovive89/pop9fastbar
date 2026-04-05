@@ -79,7 +79,7 @@ export function ManagerSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     isActive={isActive(item.url, item.exact)}
-                    onClick={() => navigate(item.url)}
+                    onClick={() => handleNavigate(item.url)}
                     tooltip={item.title}
                     className={`rounded-xl transition-all duration-200 ${
                       isActive(item.url, item.exact)
