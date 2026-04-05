@@ -174,9 +174,7 @@ const SettingsPage = () => {
     <div className="min-h-screen bg-[#0F0F0F] text-white font-sans">
       {/* Header */}
       <header className="border-b border-white/10 bg-[#141414] sticky top-0 z-50 px-6 py-4 flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/gestor')} className="rounded-xl border border-white/10 bg-white/5">
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
+        <ManagerSidebarTrigger />
         <div>
           <h1 className="text-2xl font-black tracking-tighter">CONFIGURAÇÕES</h1>
           <p className="text-white/40 text-xs font-bold uppercase tracking-widest">APIs, Impressoras & Links</p>
