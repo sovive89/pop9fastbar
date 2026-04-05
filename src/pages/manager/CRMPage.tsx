@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  ArrowLeft, Users, Search, Phone, Calendar, DollarSign,
+  Users, Search, Phone, Calendar, DollarSign,
   ShoppingBag, TrendingUp, MessageSquare, Star
 } from 'lucide-react';
+import { ManagerSidebarTrigger } from '@/components/ManagerSidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
