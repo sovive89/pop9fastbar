@@ -304,32 +304,40 @@ const StaffDashboard = () => {
           </div>
           <div className={`grid ${isActive ? 'grid-cols-3' : 'grid-cols-2'} gap-2 w-full`}>
             {isActive && (
-              <Button
-                onClick={() => navigate(`/gestor/comanda/${session.id}`)}
-                variant="outline" size="sm"
-                className="bg-[#FF8A00]/10 border-[#FF8A00]/20 hover:bg-[#FF8A00]/20 text-[#FF8A00] rounded-xl h-9 text-[10px] font-bold gap-1"
-              >
-                <Plus className="w-3.5 h-3.5" /> Lançar
-              </Button>
+              <Tooltip><TooltipTrigger asChild>
+                <Button
+                  onClick={() => navigate(`/gestor/comanda/${session.id}`)}
+                  variant="outline" size="sm"
+                  className="bg-[#FF8A00]/10 border-[#FF8A00]/20 hover:bg-[#FF8A00]/20 text-[#FF8A00] rounded-xl h-9 text-[10px] font-bold gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Lançar
+                </Button>
+              </TooltipTrigger><TooltipContent>Lançar pedido</TooltipContent></Tooltip>
             )}
             {isActive ? (
-              <Button onClick={() => setCloseModal({
-                sessionId: session.id,
-                clientName: client?.client_name || 'Sem Nome',
-                total,
-                items: allItems.map(it => ({ name: it.menu_item?.name || '', quantity: it.quantity, unitPrice: Number(it.unit_price) })),
-                openedAt: session.opened_at,
-              })} size="sm" className="bg-white text-black hover:bg-white/90 rounded-xl h-9 text-[10px] font-bold gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Fechar
-              </Button>
+              <Tooltip><TooltipTrigger asChild>
+                <Button onClick={() => setCloseModal({
+                  sessionId: session.id,
+                  clientName: client?.client_name || 'Sem Nome',
+                  total,
+                  items: allItems.map(it => ({ name: it.menu_item?.name || '', quantity: it.quantity, unitPrice: Number(it.unit_price) })),
+                  openedAt: session.opened_at,
+                })} size="sm" className="bg-white text-black hover:bg-white/90 rounded-xl h-9 text-[10px] font-bold gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Fechar
+                </Button>
+              </TooltipTrigger><TooltipContent>Fechar comanda</TooltipContent></Tooltip>
             ) : (
-              <Button onClick={() => reopenSession(session.id)} variant="outline" size="sm" className="bg-white/5 border-white/10 hover:bg-white/10 text-white rounded-xl h-9 text-[10px] font-bold gap-1">
-                <RotateCcw className="w-3.5 h-3.5" /> Reabrir
-              </Button>
+              <Tooltip><TooltipTrigger asChild>
+                <Button onClick={() => reopenSession(session.id)} variant="outline" size="sm" className="bg-white/5 border-white/10 hover:bg-white/10 text-white rounded-xl h-9 text-[10px] font-bold gap-1">
+                  <RotateCcw className="w-3.5 h-3.5" /> Reabrir
+                </Button>
+              </TooltipTrigger><TooltipContent>Reabrir comanda</TooltipContent></Tooltip>
             )}
-            <Button variant="outline" size="sm" className="bg-white/5 border-white/10 hover:bg-white/10 text-white rounded-xl h-9 text-[10px] font-bold gap-1">
-              <Printer className="w-3.5 h-3.5" /> Imprimir
-            </Button>
+            <Tooltip><TooltipTrigger asChild>
+              <Button variant="outline" size="sm" className="bg-white/5 border-white/10 hover:bg-white/10 text-white rounded-xl h-9 text-[10px] font-bold gap-1">
+                <Printer className="w-3.5 h-3.5" /> Imprimir
+              </Button>
+            </TooltipTrigger><TooltipContent>Imprimir comanda</TooltipContent></Tooltip>
           </div>
         </CardFooter>
       </Card>
