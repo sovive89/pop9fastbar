@@ -27,6 +27,7 @@ const menuItems = [
   { title: 'Estoque', url: '/gestor/estoque', icon: Package },
   { title: 'Relatórios', url: '/gestor/relatorios-avancados', icon: BarChart3 },
   { title: 'CRM', url: '/gestor/crm', icon: Users },
+  { title: 'Equipe', url: '/gestor/equipe', icon: UserCog },
   { title: 'Configurações', url: '/gestor/configuracoes', icon: Settings },
 ];
 
