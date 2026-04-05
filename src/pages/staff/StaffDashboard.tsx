@@ -418,12 +418,16 @@ const StaffDashboard = () => {
             </button>
           </div>
           <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/10">
-            <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}>
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-            <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}>
-              <List className="w-4 h-4" />
-            </button>
+            <Tooltip><TooltipTrigger asChild>
+              <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}>
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+            </TooltipTrigger><TooltipContent>Visualização em grade</TooltipContent></Tooltip>
+            <Tooltip><TooltipTrigger asChild>
+              <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}>
+                <List className="w-4 h-4" />
+              </button>
+            </TooltipTrigger><TooltipContent>Visualização em lista</TooltipContent></Tooltip>
           </div>
         </div>
 
