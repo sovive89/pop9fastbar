@@ -353,15 +353,21 @@ const StaffDashboard = () => {
               className="pl-10 w-48 lg:w-64 bg-white/5 border-white/10 rounded-xl h-9 text-sm focus:ring-1 ring-[#FF8A00]"
             />
           </div>
-          <Button onClick={() => setShowTokenModal(true)} variant="outline" size="sm" className="border-white/20 text-white/60 hover:text-[#FF8A00] hover:border-[#FF8A00]/30 font-bold rounded-xl h-9 gap-1.5">
-            <Hash className="w-4 h-4" /> <span className="hidden lg:inline">Token</span>
-          </Button>
-          <Button onClick={() => setShowScanner(true)} variant="outline" size="sm" className="border-[#FF8A00] text-[#FF8A00] hover:bg-[#FF8A00]/10 font-bold rounded-xl h-9 gap-1.5">
-            <QrCode className="w-4 h-4" /> <span className="hidden sm:inline">Bipar</span>
-          </Button>
-          <Button onClick={() => setShowNewSession(true)} size="sm" className="bg-[#FF8A00] hover:bg-[#FF8A00]/90 text-black font-bold rounded-xl h-9 gap-1.5">
-            <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Nova</span>
-          </Button>
+          <Tooltip><TooltipTrigger asChild>
+            <Button onClick={() => setShowTokenModal(true)} variant="outline" size="sm" className="border-white/20 text-white/60 hover:text-[#FF8A00] hover:border-[#FF8A00]/30 font-bold rounded-xl h-9 gap-1.5">
+              <Hash className="w-4 h-4" /> <span className="hidden lg:inline">Token</span>
+            </Button>
+          </TooltipTrigger><TooltipContent>Confirmar Token</TooltipContent></Tooltip>
+          <Tooltip><TooltipTrigger asChild>
+            <Button onClick={() => setShowScanner(true)} variant="outline" size="sm" className="border-[#FF8A00] text-[#FF8A00] hover:bg-[#FF8A00]/10 font-bold rounded-xl h-9 gap-1.5">
+              <QrCode className="w-4 h-4" /> <span className="hidden sm:inline">Bipar</span>
+            </Button>
+          </TooltipTrigger><TooltipContent>Escanear QR Code</TooltipContent></Tooltip>
+          <Tooltip><TooltipTrigger asChild>
+            <Button onClick={() => setShowNewSession(true)} size="sm" className="bg-[#FF8A00] hover:bg-[#FF8A00]/90 text-black font-bold rounded-xl h-9 gap-1.5">
+              <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Nova</span>
+            </Button>
+          </TooltipTrigger><TooltipContent>Abrir Nova Comanda</TooltipContent></Tooltip>
         </div>
       </nav>
 
