@@ -359,6 +359,9 @@ const SettingsPage = () => {
           </div>
         )}
 
+        {/* Scanner Tab */}
+        {activeTab === 'scanner' && <ScannerConfig />}
+
         {/* Links Tab */}
         {activeTab === 'links' && (
           <div className="space-y-6">
