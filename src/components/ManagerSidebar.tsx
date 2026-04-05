@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, BarChart3, Users, Package, Settings,
-  Flame, ShoppingBag, LogOut
+  Flame, ShoppingBag, LogOut, UserCog
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import pop9Logo from '@/assets/pop9-logo.png';
@@ -27,6 +27,7 @@ const menuItems = [
   { title: 'Estoque', url: '/gestor/estoque', icon: Package },
   { title: 'Relatórios', url: '/gestor/relatorios-avancados', icon: BarChart3 },
   { title: 'CRM', url: '/gestor/crm', icon: Users },
+  { title: 'Equipe', url: '/gestor/equipe', icon: UserCog },
   { title: 'Configurações', url: '/gestor/configuracoes', icon: Settings },
 ];
 
