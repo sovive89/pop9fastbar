@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, BarChart3, Users, Package, Settings,
-  Flame, ShoppingBag, LogOut
+  Flame, ShoppingBag, LogOut, UserCog
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import pop9Logo from '@/assets/pop9-logo.png';
