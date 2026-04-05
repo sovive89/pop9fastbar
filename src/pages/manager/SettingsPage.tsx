@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import {
-  ArrowLeft, Settings, Key, Printer, Link as LinkIcon,
+  Settings, Key, Printer, Link as LinkIcon,
   Copy, Eye, EyeOff, Plus, Trash2, Save, AlertCircle, CheckCircle2
 } from 'lucide-react';
+import { ManagerSidebarTrigger } from '@/components/ManagerSidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -173,9 +174,7 @@ const SettingsPage = () => {
     <div className="min-h-screen bg-[#0F0F0F] text-white font-sans">
       {/* Header */}
       <header className="border-b border-white/10 bg-[#141414] sticky top-0 z-50 px-6 py-4 flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/gestor')} className="rounded-xl border border-white/10 bg-white/5">
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
+        <ManagerSidebarTrigger />
         <div>
           <h1 className="text-2xl font-black tracking-tighter">CONFIGURAÇÕES</h1>
           <p className="text-white/40 text-xs font-bold uppercase tracking-widest">APIs, Impressoras & Links</p>

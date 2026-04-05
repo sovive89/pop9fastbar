@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  ArrowLeft, BarChart3, DollarSign, ShoppingBag, Clock,
+  BarChart3, DollarSign, ShoppingBag, Clock,
   TrendingUp, Users, Calendar, Download, Filter
 } from 'lucide-react';
+import { ManagerSidebarTrigger } from '@/components/ManagerSidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -129,9 +130,7 @@ const AdvancedReportsPage = () => {
       {/* Header */}
       <header className="border-b border-white/10 bg-[#141414] sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/gestor')} className="rounded-xl border border-white/10 bg-white/5">
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
+          <ManagerSidebarTrigger />
           <div>
             <h1 className="text-2xl font-black tracking-tighter">RELATÓRIOS AVANÇADOS</h1>
             <p className="text-white/40 text-xs font-bold uppercase tracking-widest">Análise de Vendas & Comportamento</p>
