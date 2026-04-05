@@ -334,31 +334,11 @@ const StaffDashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#0F0F0F] text-white font-sans">
-      {/* Nav */}
+      {/* Top Bar */}
       <nav className="border-b border-white/10 bg-[#141414] sticky top-0 z-50 px-4 md:px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <img src={pop9Logo} alt="POP9 BAR" className="w-10 h-10 object-contain" style={{ mixBlendMode: 'lighten' }} />
-
-          <div className="hidden md:flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/10">
-            <Button variant="ghost" size="sm" className="rounded-lg bg-white/10 text-white gap-2 h-9">
-              <LayoutDashboard className="w-4 h-4" /> Comandas
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/gestor/crm')} className="rounded-lg text-white/60 hover:text-white gap-2 h-9">
-              <Users className="w-4 h-4" /> CRM
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/gestor/relatorios-avancados')} className="rounded-lg text-white/60 hover:text-white gap-2 h-9">
-              <BarChart3 className="w-4 h-4" /> Relatórios
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/gestor/cozinha')} className="rounded-lg text-white/60 hover:text-white gap-2 h-9">
-              <Flame className="w-4 h-4" /> Cozinha
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/gestor/admin/menu')} className="rounded-lg text-white/60 hover:text-white gap-2 h-9">
-              <ShoppingBag className="w-4 h-4" /> Cardápio
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/gestor/estoque')} className="rounded-lg text-white/60 hover:text-white gap-2 h-9">
-              <Package className="w-4 h-4" /> Estoque
-            </Button>
-          </div>
+        <div className="flex items-center gap-3">
+          <ManagerSidebarTrigger />
+          <h1 className="font-display font-black text-sm text-white/80 tracking-tight hidden sm:block">Mapa de Comandas</h1>
         </div>
 
         <div className="flex items-center gap-2 md:gap-3">
@@ -379,12 +359,6 @@ const StaffDashboard = () => {
           </Button>
           <Button onClick={() => setShowNewSession(true)} size="sm" className="bg-[#FF8A00] hover:bg-[#FF8A00]/90 text-black font-bold rounded-xl h-9 gap-1.5">
             <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Nova</span>
-          </Button>
-          <Button variant="ghost" size="icon" onClick={() => navigate('/gestor/configuracoes')} className="rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 h-9 w-9">
-            <Settings className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={() => signOut()} className="rounded-xl border border-white/10 bg-white/5 h-9 w-9">
-            <LogOut className="w-4 h-4" />
           </Button>
         </div>
       </nav>
