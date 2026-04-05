@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import {
-  ArrowLeft, Settings, Key, Printer, Link as LinkIcon,
+  Settings, Key, Printer, Link as LinkIcon,
   Copy, Eye, EyeOff, Plus, Trash2, Save, AlertCircle, CheckCircle2
 } from 'lucide-react';
+import { ManagerSidebarTrigger } from '@/components/ManagerSidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
