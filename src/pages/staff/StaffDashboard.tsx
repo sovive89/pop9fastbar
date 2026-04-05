@@ -20,6 +20,7 @@ import StaffOrderModal from '@/components/StaffOrderModal';
 import CloseSessionModal from '@/components/CloseSessionModal';
 import { useStockAlerts } from '@/hooks/useStockAlerts';
 import { ManagerSidebarTrigger } from '@/components/ManagerSidebar';
+import ScannerConfig from '@/components/ScannerConfig';
 
 interface SessionOrderItem {
   id: string;
