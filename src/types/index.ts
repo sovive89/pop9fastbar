@@ -59,6 +59,8 @@ export interface SessionClient {
   id: string;
   session_id: string;
   client_name: string;
+  client_phone: string | null;
+  email: string | null;
   client_token: string;
   joined_at: string;
 }
@@ -68,9 +70,10 @@ export type OrderItemStatus = 'pending' | 'preparing' | 'ready' | 'confirmed' | 
 
 export interface Order {
   id: string;
-  session_id: string;
-  session_client_id: string;
+  session_id: string | null;
+  session_client_id: string | null;
   status: OrderStatus;
+  order_type: 'session' | 'direct_sale';
   notes: string | null;
   created_at: string;
   updated_at: string;

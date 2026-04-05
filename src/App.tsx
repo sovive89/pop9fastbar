@@ -20,6 +20,8 @@ import AdvancedReportsPage from "./pages/manager/AdvancedReportsPage";
 import CRMPage from "./pages/manager/CRMPage";
 import StockPage from "./pages/manager/StockPage";
 import StaffPage from "./pages/manager/StaffPage";
+import HybridPOSPage from "./pages/manager/HybridPOSPage";
+import QuickLinksPage from "./pages/manager/QuickLinksPage";
 import ClientHome from "./pages/client/ClientHome";
 import ClientOrder from "./pages/client/ClientOrder";
 import ClientRegistration from "./pages/client/ClientRegistration";
@@ -73,6 +75,8 @@ const App = () => {
 
               <Route path="/gestor" element={<ProtectedRoute><ManagerLayout /></ProtectedRoute>}>
                 <Route index element={<ManagerDashboard />} />
+                <Route path="pdv" element={<ProtectedRoute allowedRoles={['admin', 'attendant']}><HybridPOSPage /></ProtectedRoute>} />
+                <Route path="links" element={<ProtectedRoute allowedRoles={['admin', 'attendant']}><QuickLinksPage /></ProtectedRoute>} />
                 <Route path="comanda/:sessionId" element={<ProtectedRoute allowedRoles={['admin', 'attendant']}><SessionDetailPage /></ProtectedRoute>} />
                 <Route path="cozinha" element={<ProtectedRoute allowedRoles={['admin', 'kitchen']}><KitchenView /></ProtectedRoute>} />
                 <Route path="sessoes" element={<ProtectedRoute allowedRoles={['admin', 'attendant']}><SessionsPage /></ProtectedRoute>} />

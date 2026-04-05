@@ -15,8 +15,7 @@ const formatPhoneBR = (value: string) => {
 };
 
 const validateName = (name: string) => {
-  const parts = name.trim().split(/\s+/);
-  return parts.length >= 2 && parts.every(p => p.length >= 2);
+  return name.trim().length >= 2;
 };
 
 const ClientRegistration = () => {
@@ -82,8 +81,8 @@ const ClientRegistration = () => {
         session_id: targetSessionId,
         client_name: name.trim(),
         client_phone: phoneDigits,
+        email: email.trim() || null,
       };
-      if (email.trim()) insertData.client_email = email.trim();
 
       const { data: client, error: clientError } = await supabase
         .from('session_clients')
@@ -154,7 +153,7 @@ const ClientRegistration = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">
-                Nome completo
+                Nome
               </label>
               <div className="relative group">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-[#FF8A00] transition-colors" />
@@ -168,7 +167,7 @@ const ClientRegistration = () => {
                 />
               </div>
               {name.length > 0 && !nameValid && (
-                <p className="text-[10px] text-red-400 ml-1">Informe nome e sobrenome (mínimo 2 palavras)</p>
+                <p className="text-[10px] text-red-400 ml-1">Nome deve ter no mínimo 2 caracteres</p>
               )}
             </div>
 

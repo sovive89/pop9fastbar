@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, BarChart3, Users, Package, Settings,
-  Flame, ShoppingBag, LogOut, UserCog
+  Flame, ShoppingBag, LogOut, UserCog, Link as LinkIcon
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import pop9Logo from '@/assets/pop9-logo.png';
@@ -21,12 +21,14 @@ import {
 import { Separator } from '@/components/ui/separator';
 
 const menuItems = [
+  { title: 'PDV Híbrido', url: '/gestor/pdv', icon: ShoppingBag },
   { title: 'Comandas', url: '/gestor', icon: LayoutDashboard, exact: true },
   { title: 'Cozinha', url: '/gestor/cozinha', icon: Flame },
-  { title: 'Cardápio', url: '/gestor/admin/menu', icon: ShoppingBag },
+  { title: 'Cardápio', url: '/gestor/admin/menu', icon: Package },
   { title: 'Estoque', url: '/gestor/estoque', icon: Package },
   { title: 'Relatórios', url: '/gestor/relatorios-avancados', icon: BarChart3 },
   { title: 'CRM', url: '/gestor/crm', icon: Users },
+  { title: 'Links', url: '/gestor/links', icon: LinkIcon },
   { title: 'Equipe', url: '/gestor/equipe', icon: UserCog },
   { title: 'Configurações', url: '/gestor/configuracoes', icon: Settings },
 ];

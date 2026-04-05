@@ -241,7 +241,10 @@ const SessionDetailPage = () => {
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={copyClientLink} variant="outline" size="sm" className="border-white/20 text-white/60 hover:text-[#FF8A00] rounded-xl h-9 gap-1">
-            <ExternalLink className="w-4 h-4" /> <span className="hidden sm:inline">Link</span>
+            <ExternalLink className="w-3 h-3" /> <span className="hidden sm:inline">Link</span>
+          </Button>
+          <Button onClick={() => setShowCloseModal(true)} variant="outline" size="sm" className="border-white/20 text-white/60 hover:text-[#FF8A00] rounded-xl h-9 gap-1">
+            <Printer className="w-3 h-3" /> <span className="hidden sm:inline">Imprimir</span>
           </Button>
           {isActive ? (
             <Button onClick={() => setShowCloseModal(true)} size="sm" className="bg-white text-black hover:bg-white/90 rounded-xl h-9 gap-1 font-bold text-xs">
@@ -255,259 +258,193 @@ const SessionDetailPage = () => {
         </div>
       </nav>
 
-      <div className="max-w-5xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Left: Order list */}
-        <div className="lg:col-span-3 space-y-4">
+      <main className="p-4 md:p-6 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left: Order history */}
+        <div className="lg:col-span-8 space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold">Consumo</h2>
-            <span className="text-2xl font-black text-[#FF8A00]">R$ {total.toFixed(2)}</span>
+            <h2 className="text-lg font-black italic tracking-tighter">HISTÓRICO DE CONSUMO</h2>
+            <Badge className="bg-white/5 text-white/40 border-white/10">{allItems.length} itens</Badge>
           </div>
 
           {orders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-white/20">
-              <Wine className="w-12 h-12 mb-3 opacity-20" strokeWidth={1.5} />
-              <p className="text-sm font-bold">Nenhum pedido ainda</p>
+            <div className="bg-[#1A1A1A] border border-white/5 rounded-[2rem] p-12 flex flex-col items-center justify-center text-center gap-4">
+              <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center">
+                <Wine className="w-8 h-8 text-white/10" />
+              </div>
+              <p className="text-white/40 font-bold text-sm uppercase tracking-widest">Nenhum consumo registrado</p>
             </div>
           ) : (
-            orders.map(order => (
-              <Card key={order.id} className="bg-[#1A1A1A] border-white/5">
-                <CardHeader className="p-4 pb-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <CardTitle className="text-sm font-bold text-white/80">Pedido</CardTitle>
-                      <Badge className={`${statusLabel[order.status]?.color || 'bg-white/5 text-white/40'} text-[9px] py-0 h-4 border`}>
-                        {statusLabel[order.status]?.label || order.status}
-                      </Badge>
+            <div className="space-y-4">
+              {orders.map(order => (
+                <Card key={order.id} className="bg-[#1A1A1A] border-white/5 overflow-hidden rounded-2xl">
+                  <CardHeader className="bg-white/[0.02] py-3 px-4 border-b border-white/5 flex flex-row items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline" className="bg-white/5 border-white/10 text-[10px] text-white/40">#{order.id.slice(0, 4).toUpperCase()}</Badge>
+                      <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">{formatTime(order.created_at)}</span>
                     </div>
-                    <span className="text-[10px] text-white/30">{formatTime(order.created_at)}</span>
-                  </div>
-                </CardHeader>
-                <CardContent className="px-4 pb-4 space-y-2">
-                  {order.items.map(it => {
-                    const st = statusLabel[it.status] || { label: it.status, color: 'bg-white/5 text-white/40' };
-                    return (
-                      <div key={it.id} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0 gap-2">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold text-white/90 truncate">{it.menu_item?.name}</span>
-                            <Badge className={`${st.color} text-[8px] py-0 h-3.5 border`}>{st.label}</Badge>
-                          </div>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[10px] text-white/40">{it.quantity}x R$ {Number(it.unit_price).toFixed(2)}</span>
-                            <span className="text-[9px] text-white/20 font-mono">{it.token.slice(0, 8)}</span>
-                            {it.notes && <span className="text-[9px] text-white/30 italic truncate max-w-[100px]">{it.notes}</span>}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-black text-white text-sm">R$ {(it.quantity * Number(it.unit_price)).toFixed(2)}</span>
-                          {it.status !== 'cancelled' && it.status !== 'confirmed' && (
-                            <div className="flex gap-1">
-                              {it.status === 'pending' && (
-                                <button onClick={() => updateItemStatus(it.id, 'preparing')} className="p-1 rounded-lg hover:bg-blue-500/20 text-blue-400 transition-colors" title="Preparar">
-                                  <Clock className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                              {it.status === 'preparing' && (
-                                <button onClick={() => updateItemStatus(it.id, 'ready')} className="p-1 rounded-lg hover:bg-green-500/20 text-green-400 transition-colors" title="Pronto">
-                                  <CheckCircle2 className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                              {it.status === 'ready' && (
-                                <button onClick={() => updateItemStatus(it.id, 'confirmed')} className="p-1 rounded-lg hover:bg-emerald-500/20 text-emerald-400 transition-colors" title="Entregue">
-                                  <CheckCircle2 className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                              <button onClick={() => cancelItem(it.id)} className="p-1 rounded-lg hover:bg-red-500/20 text-red-400 transition-colors" title="Cancelar">
-                                <XCircle className="w-3.5 h-3.5" />
-                              </button>
+                    <Badge className={statusLabel[order.status]?.color || 'bg-white/5'}>
+                      {statusLabel[order.status]?.label || order.status}
+                    </Badge>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="divide-y divide-white/5">
+                      {order.items.map(item => (
+                        <div key={item.id} className="p-4 flex items-center justify-between group">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center">
+                              <Wine className="w-5 h-5 text-white/20" />
                             </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
-
-        {/* Right: Menu / Add items panel */}
-        <div className="lg:col-span-2 space-y-4">
-          {isActive && (
-            <>
-              <Button onClick={() => setShowMenu(!showMenu)} className="w-full bg-[#FF8A00] text-black font-bold rounded-xl h-12 gap-2 text-sm">
-                <Plus className="w-5 h-5" /> {showMenu ? 'Fechar Cardápio' : 'Lançar Itens'}
-              </Button>
-
-              {showMenu && (
-                <div className="bg-[#1A1A1A] border border-white/5 rounded-2xl overflow-hidden">
-                  {/* Search */}
-                  <div className="p-3 border-b border-white/5">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                      <Input
-                        placeholder="Buscar item..."
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        className="pl-9 bg-white/5 border-white/10 rounded-xl h-9 text-sm"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Categories */}
-                  <div className="flex gap-2 px-3 py-2 overflow-x-auto scrollbar-hide border-b border-white/5">
-                    <button
-                      onClick={() => setSelectedCat(null)}
-                      className={`px-3 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap transition-all ${!selectedCat ? 'bg-[#FF8A00] text-black' : 'bg-white/5 text-white/50 hover:text-white'}`}
-                    >
-                      Todos
-                    </button>
-                    {categories.map(c => (
-                      <button
-                        key={c.id}
-                        onClick={() => setSelectedCat(c.id)}
-                        className={`px-3 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap transition-all ${selectedCat === c.id ? 'bg-[#FF8A00] text-black' : 'bg-white/5 text-white/50 hover:text-white'}`}
-                      >
-                        {c.name}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Items */}
-                  <div className="max-h-[400px] overflow-y-auto p-3 space-y-1.5">
-                    {filtered.length === 0 ? (
-                      <div className="py-8 text-center">
-                        <Wine className="w-8 h-8 text-white/10 mx-auto mb-2" strokeWidth={1.5} />
-                        <p className="text-[10px] text-white/30">Nenhum item encontrado</p>
-                      </div>
-                    ) : (
-                      filtered.map(item => {
-                        const qty = getCartQty(item.id);
-                        return (
-                          <div
-                            key={item.id}
-                            className={`flex items-center justify-between p-2.5 rounded-xl transition-all ${qty > 0 ? 'bg-[#FF8A00]/10 border border-[#FF8A00]/20' : 'bg-white/5 hover:bg-white/10'}`}
-                          >
-                            <div className="flex-1 min-w-0 mr-3">
-                              <p className="text-sm font-bold text-white/90 truncate">{item.name}</p>
-                              <p className="text-xs text-[#FF8A00] font-bold">R$ {Number(item.price).toFixed(2)}</p>
+                            <div>
+                              <h4 className="font-bold text-sm">{item.menu_item?.name || 'Item removido'}</h4>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-[10px] font-bold text-white/40">{item.quantity}x R$ {Number(item.unit_price).toFixed(2)}</span>
+                                {item.notes && <Badge variant="outline" className="text-[9px] py-0 h-4 border-white/10 text-white/30">Obs: {item.notes}</Badge>}
+                              </div>
                             </div>
-                            {qty === 0 ? (
-                              <button onClick={() => addToCart(item)} className="w-8 h-8 rounded-lg bg-[#FF8A00]/20 text-[#FF8A00] hover:bg-[#FF8A00] hover:text-black flex items-center justify-center transition-all">
-                                <Plus className="w-4 h-4" />
-                              </button>
-                            ) : (
-                              <div className="flex items-center gap-1.5">
-                                <button onClick={() => updateQty(item.id, -1)} className="w-7 h-7 rounded-lg bg-white/10 text-white hover:bg-red-500/20 hover:text-red-400 flex items-center justify-center transition-all">
-                                  <Minus className="w-3.5 h-3.5" />
-                                </button>
-                                <span className="text-sm font-black text-white w-5 text-center">{qty}</span>
-                                <button onClick={() => addToCart(item)} className="w-7 h-7 rounded-lg bg-[#FF8A00]/20 text-[#FF8A00] hover:bg-[#FF8A00] hover:text-black flex items-center justify-center transition-all">
-                                  <Plus className="w-3.5 h-3.5" />
-                                </button>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="font-black text-sm mr-2">R$ {(item.quantity * item.unit_price).toFixed(2)}</span>
+                            {isActive && item.status !== 'served' && item.status !== 'cancelled' && (
+                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button onClick={() => updateItemStatus(item.id, 'served')} size="icon" variant="ghost" className="h-8 w-8 rounded-lg text-green-400 hover:bg-green-400/10">
+                                  <CheckCircle2 className="w-4 h-4" />
+                                </Button>
+                                <Button onClick={() => cancelItem(item.id)} size="icon" variant="ghost" className="h-8 w-8 rounded-lg text-red-400 hover:bg-red-400/10">
+                                  <XCircle className="w-4 h-4" />
+                                </Button>
                               </div>
                             )}
                           </div>
-                        );
-                      })
-                    )}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Right: Summary & Quick Add */}
+        <div className="lg:col-span-4 space-y-6">
+          <Card className="bg-[#1A1A1A] border-white/10 rounded-[2.5rem] overflow-hidden sticky top-24">
+            <CardHeader className="bg-[#FF8A00] p-6 text-black">
+              <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Total Acumulado</p>
+              <h3 className="text-4xl font-black italic tracking-tighter">R$ {total.toFixed(2)}</h3>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+              {isActive && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-black uppercase tracking-widest text-white/30">Lançamento Rápido</h4>
+                    <Button onClick={() => setShowMenu(!showMenu)} variant="ghost" size="sm" className="h-7 text-[10px] font-bold uppercase text-[#FF8A00] hover:bg-[#FF8A00]/10">
+                      {showMenu ? 'Fechar' : 'Abrir Cardápio'}
+                    </Button>
                   </div>
 
-                  {/* Cart footer */}
-                  {cart.length > 0 && (
-                    <div className="border-t border-white/5 p-3 space-y-3">
-                      <div className="flex flex-wrap gap-1.5">
-                        {cart.map(e => (
-                          <span key={e.item.id} className="text-[10px] px-2 py-1 bg-[#FF8A00]/10 text-[#FF8A00] rounded-lg flex items-center gap-1 font-bold">
-                            {e.quantity}x {e.item.name}
-                            <button onClick={() => setCart(prev => prev.filter(c => c.item.id !== e.item.id))} className="hover:text-red-400">
-                              <X className="w-3 h-3" />
-                            </button>
-                          </span>
+                  {showMenu ? (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-white/20" />
+                        <Input 
+                          placeholder="Buscar item..." 
+                          value={search}
+                          onChange={e => setSearch(e.target.value)}
+                          className="bg-white/5 border-white/10 h-9 pl-9 rounded-xl text-xs"
+                        />
+                      </div>
+                      <div className="max-h-64 overflow-y-auto space-y-2 pr-2 scrollbar-hide">
+                        {filtered.map(item => (
+                          <div key={item.id} className="flex items-center justify-between p-2 bg-white/[0.02] rounded-xl border border-white/5 hover:border-white/10 transition-colors">
+                            <div className="flex-1 min-w-0 mr-2">
+                              <p className="text-xs font-bold truncate">{item.name}</p>
+                              <p className="text-[10px] text-[#FF8A00] font-black">R$ {Number(item.price).toFixed(2)}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {getCartQty(item.id) > 0 && (
+                                <div className="flex items-center gap-2 bg-black/20 p-1 rounded-lg">
+                                  <button onClick={() => updateQty(item.id, -1)} className="w-5 h-5 flex items-center justify-center text-white/40"><Minus className="w-3 h-3" /></button>
+                                  <span className="text-[10px] font-black w-3 text-center">{getCartQty(item.id)}</span>
+                                  <button onClick={() => addToCart(item)} className="w-5 h-5 flex items-center justify-center text-[#FF8A00]"><Plus className="w-3 h-3" /></button>
+                                </div>
+                              )}
+                              {getCartQty(item.id) === 0 && (
+                                <Button onClick={() => addToCart(item)} size="icon" variant="ghost" className="h-8 w-8 rounded-lg bg-white/5 hover:bg-[#FF8A00] hover:text-black transition-all">
+                                  <Plus className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
                         ))}
                       </div>
-                      <Button onClick={submitOrder} disabled={submitting} className="w-full rounded-xl h-11 bg-[#FF8A00] text-black font-bold gap-2 text-sm">
-                        {submitting ? (
-                          <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <>
-                            <Send className="w-4 h-4" />
-                            Enviar — {cartCount} {cartCount === 1 ? 'item' : 'itens'} · R$ {cartTotal.toFixed(2)}
-                          </>
-                        )}
+                      
+                      {cart.length > 0 && (
+                        <div className="pt-4 border-t border-white/5 space-y-3">
+                          <div className="flex items-center justify-between text-xs font-bold">
+                            <span className="text-white/40">Subtotal</span>
+                            <span>R$ {cartTotal.toFixed(2)}</span>
+                          </div>
+                          <Button onClick={submitOrder} disabled={submitting} className="w-full bg-white text-black font-black h-11 rounded-xl gap-2">
+                            {submitting ? <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> : <><Send className="w-4 h-4" /> LANÇAR {cartCount} ITENS</>}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button onClick={() => setShowMenu(true)} variant="outline" className="h-20 rounded-2xl border-white/5 bg-white/5 flex flex-col gap-2 hover:border-[#FF8A00]/30 transition-all">
+                        <Plus className="w-5 h-5 text-[#FF8A00]" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Lançar Item</span>
+                      </Button>
+                      <Button onClick={() => setShowCloseModal(true)} variant="outline" className="h-20 rounded-2xl border-white/5 bg-white/5 flex flex-col gap-2 hover:border-white/20 transition-all">
+                        <Printer className="w-5 h-5 text-white/40" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Imprimir</span>
                       </Button>
                     </div>
                   )}
                 </div>
               )}
-            </>
-          )}
 
-          {/* Session info card */}
-          <Card className="bg-[#1A1A1A] border-white/5">
-            <CardContent className="p-4 space-y-3">
-              <h3 className="text-[10px] font-black text-white/30 uppercase tracking-widest">Informações</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-white/40">Cliente</span>
-                  <span className="font-bold">{client?.client_name}</span>
+              <div className="pt-6 border-t border-white/5 space-y-4">
+                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-white/20">
+                  <span>Informações</span>
                 </div>
-                {(client as any)?.client_phone && (
-                  <div className="flex justify-between">
-                    <span className="text-white/40">Telefone</span>
-                    <span className="font-bold">{(client as any).client_phone}</span>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-white/40">Status</span>
+                    <Badge className={isActive ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}>
+                      {isActive ? 'Ativa' : 'Encerrada'}
+                    </Badge>
                   </div>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-white/40">Abertura</span>
-                  <span className="font-bold text-xs">{formatDateTime(session.opened_at)}</span>
-                </div>
-                {session.closed_at && (
-                  <div className="flex justify-between">
-                    <span className="text-white/40">Fechamento</span>
-                    <span className="font-bold text-xs">{formatDateTime(session.closed_at)}</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-white/40">Abertura</span>
+                    <span className="text-xs font-bold">{formatDateTime(session.opened_at)}</span>
                   </div>
-                )}
-                {session.closed_at && (
-                  <div className="flex justify-between">
-                    <span className="text-white/40">Duração</span>
-                    <span className="font-bold text-xs">{getElapsed(session.opened_at)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-white/40">Status</span>
-                  <Badge className={isActive ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}>
-                    {isActive ? 'Ativa' : 'Encerrada'}
-                  </Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white/40">Total Itens</span>
-                  <span className="font-bold">{allItems.length}</span>
-                </div>
-                <div className="flex justify-between pt-2 border-t border-white/5">
-                  <span className="text-white/40 font-black uppercase text-[10px] tracking-widest">Total</span>
-                  <span className="text-xl font-black text-[#FF8A00]">R$ {total.toFixed(2)}</span>
+                  {session.closed_at && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-white/40">Fechamento</span>
+                      <span className="text-xs font-bold">{formatDateTime(session.closed_at)}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
           </Card>
-
-          <Button variant="outline" className="w-full border-white/10 text-white/40 hover:text-white rounded-xl gap-2">
-            <Printer className="w-4 h-4" /> Imprimir Comanda
-          </Button>
         </div>
-      </div>
+      </main>
 
-      {showCloseModal && client && (
-        <CloseSessionModal
+      {showCloseModal && (
+        <CloseSessionModal 
           sessionId={sessionId!}
-          clientName={client.client_name}
+          clientName={client?.client_name || 'Sem nome'}
           total={total}
-          items={allItems.map(it => ({ name: it.menu_item?.name || '', quantity: it.quantity, unitPrice: Number(it.unit_price) }))}
           openedAt={session.opened_at}
+          items={allItems.map(it => ({ name: it.menu_item?.name || 'Item', quantity: it.quantity, unitPrice: Number(it.unit_price) }))}
           onClose={() => setShowCloseModal(false)}
-          onClosed={() => { setShowCloseModal(false); fetchSession(); }}
+          onClosed={() => {
+            setShowCloseModal(false);
+            fetchSession();
+          }}
         />
       )}
     </div>

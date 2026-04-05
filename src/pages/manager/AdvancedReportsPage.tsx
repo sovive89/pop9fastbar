@@ -4,7 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   BarChart3, DollarSign, ShoppingBag, Clock,
-  TrendingUp, Users, Calendar, Download, Filter
+  TrendingUp, Users, Calendar, Download, Filter,
+  Star, Mail, Smartphone
 } from 'lucide-react';
 import { ManagerSidebarTrigger } from '@/components/ManagerSidebar';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 interface OrderData {
   id: string;
   created_at: string;
+  order_type: string;
   items: Array<{
     quantity: number;
     unit_price: number;
@@ -25,7 +27,7 @@ interface SessionData {
   id: string;
   opened_at: string;
   closed_at: string | null;
-  clients: Array<{ client_name: string; client_phone: string }>;
+  clients: Array<{ client_name: string; client_phone: string; email: string | null }>;
 }
 
 const AdvancedReportsPage = () => {
@@ -61,12 +63,12 @@ const AdvancedReportsPage = () => {
     const [ordersRes, sessionsRes] = await Promise.all([
       supabase
         .from('orders')
-        .select('id, created_at, items:order_items(quantity, unit_price, menu_item:menu_items(name, category_id))')
+        .select('id, created_at, order_type, items:order_items(quantity, unit_price, menu_item:menu_items(name, category_id))')
         .gte('created_at', startDate.toISOString())
         .neq('status', 'cancelled'),
       supabase
         .from('sessions')
-        .select('id, opened_at, closed_at, clients:session_clients(client_name, client_phone)')
+        .select('id, opened_at, closed_at, clients:session_clients(client_name, client_phone, email)')
         .gte('opened_at', startDate.toISOString()),
     ]);
 
@@ -82,7 +84,13 @@ const AdvancedReportsPage = () => {
     const totalOrders = orders.length;
     const totalItems = orders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0), 0);
     const avgTicket = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    
     const uniqueClients = new Set(sessions.flatMap(s => s.clients.map(c => c.client_phone))).size;
+    const clientsWithEmail = sessions.flatMap(s => s.clients).filter(c => c.email).length;
+    
+    const directSales = orders.filter(o => o.order_type === 'direct_sale').length;
+    const sessionOrders = orders.filter(o => o.order_type !== 'direct_sale').length;
+
     const avgSessionTime = sessions
       .filter(s => s.closed_at)
       .reduce((sum, s) => {
@@ -91,7 +99,11 @@ const AdvancedReportsPage = () => {
         return sum + (close - open);
       }, 0) / Math.max(sessions.filter(s => s.closed_at).length, 1) / 60000; // em minutos
 
-    return { totalRevenue, totalOrders, totalItems, avgTicket, uniqueClients, avgSessionTime };
+    return { 
+      totalRevenue, totalOrders, totalItems, avgTicket, 
+      uniqueClients, clientsWithEmail, avgSessionTime,
+      directSales, sessionOrders
+    };
   }, [orders, sessions]);
 
   const topItems = useMemo(() => {
@@ -107,16 +119,6 @@ const AdvancedReportsPage = () => {
     return Object.values(map).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
   }, [orders]);
 
-  const hourlyDistribution = useMemo(() => {
-    const hours: Record<number, number> = {};
-    for (let i = 0; i < 24; i++) hours[i] = 0;
-    orders.forEach(o => {
-      const hour = new Date(o.created_at).getHours();
-      hours[hour]++;
-    });
-    return hours;
-  }, [orders]);
-
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0F0F0F] flex items-center justify-center">
@@ -126,26 +128,26 @@ const AdvancedReportsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0F0F0F] text-white">
+    <div className="min-h-screen bg-[#0F0F0F] text-white font-sans">
       {/* Header */}
       <header className="border-b border-white/10 bg-[#141414] sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <ManagerSidebarTrigger />
           <div>
-            <h1 className="text-2xl font-black tracking-tighter">RELATÓRIOS AVANÇADOS</h1>
-            <p className="text-white/40 text-xs font-bold uppercase tracking-widest">Análise de Vendas & Comportamento</p>
+            <h1 className="text-2xl font-black tracking-tighter italic">DASHBOARD ANALÍTICO</h1>
+            <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Vendas • CRM • Performance</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 bg-white/5 p-1 rounded-xl border border-white/10">
           {(['today', 'week', 'month'] as const).map(p => (
             <Button
               key={p}
               onClick={() => setPeriod(p)}
-              variant={period === p ? 'default' : 'outline'}
-              className={`rounded-xl font-bold ${
+              variant="ghost"
+              className={`rounded-lg font-bold text-xs h-9 px-4 transition-all ${
                 period === p
-                  ? 'bg-[#FF8A00] text-black'
-                  : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
+                  ? 'bg-[#FF8A00] text-black shadow-lg shadow-[#FF8A00]/20'
+                  : 'text-white/40 hover:text-white'
               }`}
             >
               {p === 'today' ? 'Hoje' : p === 'week' ? '7 dias' : '30 dias'}
@@ -156,129 +158,147 @@ const AdvancedReportsPage = () => {
 
       <main className="p-6 max-w-7xl mx-auto space-y-8">
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-          <Card className="bg-[#1A1A1A] border-white/10 col-span-1 md:col-span-1 lg:col-span-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="bg-[#1A1A1A] border-white/10 rounded-[2rem] overflow-hidden">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Faturamento</p>
-                  <p className="text-2xl font-black text-[#FF8A00]">R$ {metrics.totalRevenue.toFixed(2)}</p>
+                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Faturamento Total</p>
+                  <p className="text-3xl font-black text-[#FF8A00]">R$ {metrics.totalRevenue.toFixed(2)}</p>
                 </div>
-                <DollarSign className="w-8 h-8 text-[#FF8A00]/30" />
+                <div className="bg-[#FF8A00]/10 p-3 rounded-2xl">
+                  <DollarSign className="w-6 h-6 text-[#FF8A00]" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-[#1A1A1A] border-white/10">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Pedidos</p>
-                  <p className="text-2xl font-black text-white">{metrics.totalOrders}</p>
-                </div>
-                <ShoppingBag className="w-8 h-8 text-white/20" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-[#1A1A1A] border-white/10">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Itens</p>
-                  <p className="text-2xl font-black text-white">{metrics.totalItems}</p>
-                </div>
-                <ShoppingBag className="w-8 h-8 text-white/20" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-[#1A1A1A] border-white/10">
+          <Card className="bg-[#1A1A1A] border-white/10 rounded-[2rem] overflow-hidden">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Ticket Médio</p>
-                  <p className="text-2xl font-black text-white">R$ {metrics.avgTicket.toFixed(2)}</p>
+                  <p className="text-3xl font-black text-white">R$ {metrics.avgTicket.toFixed(2)}</p>
                 </div>
-                <TrendingUp className="w-8 h-8 text-white/20" />
+                <div className="bg-white/5 p-3 rounded-2xl">
+                  <TrendingUp className="w-6 h-6 text-white/40" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-[#1A1A1A] border-white/10">
+          <Card className="bg-[#1A1A1A] border-white/10 rounded-[2rem] overflow-hidden">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Clientes</p>
-                  <p className="text-2xl font-black text-white">{metrics.uniqueClients}</p>
+                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Novos Clientes</p>
+                  <p className="text-3xl font-black text-white">{metrics.uniqueClients}</p>
                 </div>
-                <Users className="w-8 h-8 text-white/20" />
+                <div className="bg-white/5 p-3 rounded-2xl">
+                  <Users className="w-6 h-6 text-white/40" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-[#1A1A1A] border-white/10">
+          <Card className="bg-[#1A1A1A] border-white/10 rounded-[2rem] overflow-hidden">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Tempo Médio</p>
-                  <p className="text-2xl font-black text-white">{metrics.avgSessionTime.toFixed(0)}m</p>
+                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Captura de E-mail</p>
+                  <p className="text-3xl font-black text-white">{metrics.clientsWithEmail}</p>
                 </div>
-                <Clock className="w-8 h-8 text-white/20" />
+                <div className="bg-white/5 p-3 rounded-2xl">
+                  <Mail className="w-6 h-6 text-white/40" />
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Top Items */}
-        <Card className="bg-[#1A1A1A] border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-[#FF8A00]" /> Top 5 Itens Mais Vendidos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {topItems.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Badge className="bg-[#FF8A00] text-black font-bold">#{idx + 1}</Badge>
-                      <h4 className="font-bold text-white">{item.name}</h4>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Top Items */}
+          <Card className="bg-[#1A1A1A] border-white/10 rounded-[2.5rem] lg:col-span-8 overflow-hidden">
+            <CardHeader className="bg-white/[0.02] border-b border-white/5">
+              <CardTitle className="text-lg font-black italic flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-[#FF8A00]" /> TOP 5 ITENS MAIS VENDIDOS
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                {topItems.map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-4 bg-white/[0.02] rounded-2xl border border-white/5 hover:border-white/10 transition-all">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-[#FF8A00] rounded-xl flex items-center justify-center text-black font-black">
+                        {idx + 1}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-white">{item.name}</h4>
+                        <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">{item.qty} unidades</p>
+                      </div>
                     </div>
-                    <p className="text-sm text-white/60">{item.qty} unidades vendidas</p>
+                    <div className="text-right">
+                      <p className="text-xl font-black text-[#FF8A00]">R$ {item.revenue.toFixed(2)}</p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-black text-[#FF8A00]">R$ {item.revenue.toFixed(2)}</p>
-                    <p className="text-[10px] text-white/40">de faturamento</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Hourly Distribution */}
-        <Card className="bg-[#1A1A1A] border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-[#FF8A00]" /> Distribuição por Horário
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-12 gap-1">
-              {Object.entries(hourlyDistribution).map(([hour, count]) => (
-                <div key={hour} className="flex flex-col items-center">
-                  <div
-                    className="w-full bg-[#FF8A00]/30 rounded-t-lg transition-all"
-                    style={{ height: `${Math.max(20, (count / Math.max(...Object.values(hourlyDistribution))) * 100)}px` }}
-                  />
-                  <p className="text-[10px] text-white/40 mt-1">{hour}h</p>
+          {/* Operational Mix */}
+          <Card className="bg-[#1A1A1A] border-white/10 rounded-[2.5rem] lg:col-span-4 overflow-hidden">
+            <CardHeader className="bg-white/[0.02] border-b border-white/5">
+              <CardTitle className="text-lg font-black italic flex items-center gap-2">
+                <Filter className="w-5 h-5 text-[#FF8A00]" /> MIX OPERACIONAL
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+              <div className="space-y-2">
+                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/40">
+                  <span>Venda Direta (PDV)</span>
+                  <span>{metrics.directSales}</span>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-white transition-all duration-1000" 
+                    style={{ width: `${(metrics.directSales / Math.max(metrics.totalOrders, 1)) * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/40">
+                  <span>Comandas (Sessões)</span>
+                  <span>{metrics.sessionOrders}</span>
+                </div>
+                <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-[#FF8A00] transition-all duration-1000" 
+                    style={{ width: `${(metrics.sessionOrders / Math.max(metrics.totalOrders, 1)) * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-white/5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-white/20" />
+                    <span className="text-xs font-bold text-white/60">Tempo Médio Comanda</span>
+                  </div>
+                  <span className="text-lg font-black">{metrics.avgSessionTime.toFixed(0)} min</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-[#FF8A00]" />
+                    <span className="text-xs font-bold text-white/60">Taxa de Conversão CRM</span>
+                  </div>
+                  <span className="text-lg font-black">{((metrics.clientsWithEmail / Math.max(metrics.uniqueClients, 1)) * 100).toFixed(1)}%</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </main>
     </div>
   );

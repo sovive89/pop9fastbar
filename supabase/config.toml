@@ -1,1 +1,33 @@
 project_id = "hxxtexnomrslyjjkibxy"
+[functions.validate-order]
+enabled = true
+verify_jwt = true
+import_map = "./functions/validate-order/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/validate-order/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/validate-order/*.html" ]
+
+[functions.process-payment]
+enabled = true
+verify_jwt = true
+import_map = "./functions/process-payment/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/process-payment/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/process-payment/*.html" ]
+
+[functions.close-comanda]
+enabled = true
+verify_jwt = true
+import_map = "./functions/close-comanda/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/close-comanda/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/close-comanda/*.html" ]
