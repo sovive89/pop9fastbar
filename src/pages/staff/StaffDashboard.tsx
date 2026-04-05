@@ -7,7 +7,7 @@ import {
   Clock, Plus, Printer, CheckCircle2, 
   Search, User as UserIcon, QrCode, RotateCcw,
   Wine, ChevronDown, ChevronUp, ExternalLink, Hash, XCircle,
-  LayoutGrid, List
+  LayoutGrid, List, Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
