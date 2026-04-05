@@ -35,7 +35,7 @@ const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode;
   const { user, role, loading } = useAuth();
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
   if (!user) return <Navigate to="/auth" replace />;
-  if (allowedRoles && role && !allowedRoles.includes(role)) return <Navigate to="/" replace />;
+  if (allowedRoles && role && !allowedRoles.includes(role)) return <Navigate to="/gestor" replace />;
   return <>{children}</>;
 };
 
@@ -63,24 +63,19 @@ const App = () => {
           {showSplash && !hasSeenSplash && <SplashScreen onComplete={handleSplashComplete} />}
           <BrowserRouter>
             <Routes>
-              {/* ROTA PRINCIPAL: GESTOR */}
-              <Route path="/" element={<ProtectedRoute><ManagerLayout /></ProtectedRoute>}>
-                <Route index element={<ManagerDashboard />} />
-              </Route>
-
-              {/* ROTAS DE AUTENTICAÇÃO */}
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/login" element={<Auth />} />
-
-              {/* ROTAS DO CLIENTE (AUTOATENDIMENTO) */}
-              <Route path="/cliente" element={<ClientLayout />}>
+              {/* ROTA PRINCIPAL: CLIENTE (AUTOATENDIMENTO) */}
+              <Route path="/" element={<ClientLayout />}>
                 <Route index element={<ClientRegistration />} />
                 <Route path="abrir" element={<ClientRegistration />} />
                 <Route path="pedido/:sessionId" element={<ClientRegistration />} />
                 <Route path="pedido/:sessionId/:clientToken" element={<ClientOrder />} />
               </Route>
 
-              {/* ROTAS DO GESTOR (MANTIDAS PARA COMPATIBILIDADE) */}
+              {/* ROTAS DE AUTENTICAÇÃO */}
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/login" element={<Auth />} />
+
+              {/* ROTAS DO GESTOR */}
               <Route path="/gestor" element={<ProtectedRoute><ManagerLayout /></ProtectedRoute>}>
                 <Route index element={<ManagerDashboard />} />
                 <Route path="pdv" element={<ProtectedRoute allowedRoles={['admin', 'attendant']}><HybridPOSPage /></ProtectedRoute>} />
