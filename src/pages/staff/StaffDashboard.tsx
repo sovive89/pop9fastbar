@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Clock, Plus, Printer, CheckCircle2, 
   Search, User as UserIcon, QrCode, RotateCcw,
@@ -248,9 +249,11 @@ const StaffDashboard = () => {
             </div>
             <div className="flex items-center gap-2">
               {isActive && (
-                <button onClick={(e) => { e.stopPropagation(); copyClientLink(session); }} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors" title="Copiar link do cliente">
-                  <ExternalLink className="w-4 h-4 text-white/40 hover:text-[#FF8A00]" />
-                </button>
+                <Tooltip><TooltipTrigger asChild>
+                  <button onClick={(e) => { e.stopPropagation(); copyClientLink(session); }} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors">
+                    <ExternalLink className="w-4 h-4 text-white/40 hover:text-[#FF8A00]" />
+                  </button>
+                </TooltipTrigger><TooltipContent>Copiar link do cliente</TooltipContent></Tooltip>
               )}
               <div className="bg-[#FF8A00]/10 p-2 rounded-xl">
                 <UserIcon className="w-5 h-5 text-[#FF8A00]" />
@@ -301,32 +304,40 @@ const StaffDashboard = () => {
           </div>
           <div className={`grid ${isActive ? 'grid-cols-3' : 'grid-cols-2'} gap-2 w-full`}>
             {isActive && (
-              <Button
-                onClick={() => navigate(`/gestor/comanda/${session.id}`)}
-                variant="outline" size="sm"
-                className="bg-[#FF8A00]/10 border-[#FF8A00]/20 hover:bg-[#FF8A00]/20 text-[#FF8A00] rounded-xl h-9 text-[10px] font-bold gap-1"
-              >
-                <Plus className="w-3.5 h-3.5" /> Lançar
-              </Button>
+              <Tooltip><TooltipTrigger asChild>
+                <Button
+                  onClick={() => navigate(`/gestor/comanda/${session.id}`)}
+                  variant="outline" size="sm"
+                  className="bg-[#FF8A00]/10 border-[#FF8A00]/20 hover:bg-[#FF8A00]/20 text-[#FF8A00] rounded-xl h-9 text-[10px] font-bold gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Lançar
+                </Button>
+              </TooltipTrigger><TooltipContent>Lançar pedido</TooltipContent></Tooltip>
             )}
             {isActive ? (
-              <Button onClick={() => setCloseModal({
-                sessionId: session.id,
-                clientName: client?.client_name || 'Sem Nome',
-                total,
-                items: allItems.map(it => ({ name: it.menu_item?.name || '', quantity: it.quantity, unitPrice: Number(it.unit_price) })),
-                openedAt: session.opened_at,
-              })} size="sm" className="bg-white text-black hover:bg-white/90 rounded-xl h-9 text-[10px] font-bold gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Fechar
-              </Button>
+              <Tooltip><TooltipTrigger asChild>
+                <Button onClick={() => setCloseModal({
+                  sessionId: session.id,
+                  clientName: client?.client_name || 'Sem Nome',
+                  total,
+                  items: allItems.map(it => ({ name: it.menu_item?.name || '', quantity: it.quantity, unitPrice: Number(it.unit_price) })),
+                  openedAt: session.opened_at,
+                })} size="sm" className="bg-white text-black hover:bg-white/90 rounded-xl h-9 text-[10px] font-bold gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Fechar
+                </Button>
+              </TooltipTrigger><TooltipContent>Fechar comanda</TooltipContent></Tooltip>
             ) : (
-              <Button onClick={() => reopenSession(session.id)} variant="outline" size="sm" className="bg-white/5 border-white/10 hover:bg-white/10 text-white rounded-xl h-9 text-[10px] font-bold gap-1">
-                <RotateCcw className="w-3.5 h-3.5" /> Reabrir
-              </Button>
+              <Tooltip><TooltipTrigger asChild>
+                <Button onClick={() => reopenSession(session.id)} variant="outline" size="sm" className="bg-white/5 border-white/10 hover:bg-white/10 text-white rounded-xl h-9 text-[10px] font-bold gap-1">
+                  <RotateCcw className="w-3.5 h-3.5" /> Reabrir
+                </Button>
+              </TooltipTrigger><TooltipContent>Reabrir comanda</TooltipContent></Tooltip>
             )}
-            <Button variant="outline" size="sm" className="bg-white/5 border-white/10 hover:bg-white/10 text-white rounded-xl h-9 text-[10px] font-bold gap-1">
-              <Printer className="w-3.5 h-3.5" /> Imprimir
-            </Button>
+            <Tooltip><TooltipTrigger asChild>
+              <Button variant="outline" size="sm" className="bg-white/5 border-white/10 hover:bg-white/10 text-white rounded-xl h-9 text-[10px] font-bold gap-1">
+                <Printer className="w-3.5 h-3.5" /> Imprimir
+              </Button>
+            </TooltipTrigger><TooltipContent>Imprimir comanda</TooltipContent></Tooltip>
           </div>
         </CardFooter>
       </Card>
@@ -352,15 +363,21 @@ const StaffDashboard = () => {
               className="pl-10 w-48 lg:w-64 bg-white/5 border-white/10 rounded-xl h-9 text-sm focus:ring-1 ring-[#FF8A00]"
             />
           </div>
-          <Button onClick={() => setShowTokenModal(true)} variant="outline" size="sm" className="border-white/20 text-white/60 hover:text-[#FF8A00] hover:border-[#FF8A00]/30 font-bold rounded-xl h-9 gap-1.5">
-            <Hash className="w-4 h-4" /> <span className="hidden lg:inline">Token</span>
-          </Button>
-          <Button onClick={() => setShowScanner(true)} variant="outline" size="sm" className="border-[#FF8A00] text-[#FF8A00] hover:bg-[#FF8A00]/10 font-bold rounded-xl h-9 gap-1.5">
-            <QrCode className="w-4 h-4" /> <span className="hidden sm:inline">Bipar</span>
-          </Button>
-          <Button onClick={() => setShowNewSession(true)} size="sm" className="bg-[#FF8A00] hover:bg-[#FF8A00]/90 text-black font-bold rounded-xl h-9 gap-1.5">
-            <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Nova</span>
-          </Button>
+          <Tooltip><TooltipTrigger asChild>
+            <Button onClick={() => setShowTokenModal(true)} variant="outline" size="sm" className="border-white/20 text-white/60 hover:text-[#FF8A00] hover:border-[#FF8A00]/30 font-bold rounded-xl h-9 gap-1.5">
+              <Hash className="w-4 h-4" /> <span className="hidden lg:inline">Token</span>
+            </Button>
+          </TooltipTrigger><TooltipContent>Confirmar Token</TooltipContent></Tooltip>
+          <Tooltip><TooltipTrigger asChild>
+            <Button onClick={() => setShowScanner(true)} variant="outline" size="sm" className="border-[#FF8A00] text-[#FF8A00] hover:bg-[#FF8A00]/10 font-bold rounded-xl h-9 gap-1.5">
+              <QrCode className="w-4 h-4" /> <span className="hidden sm:inline">Bipar</span>
+            </Button>
+          </TooltipTrigger><TooltipContent>Escanear QR Code</TooltipContent></Tooltip>
+          <Tooltip><TooltipTrigger asChild>
+            <Button onClick={() => setShowNewSession(true)} size="sm" className="bg-[#FF8A00] hover:bg-[#FF8A00]/90 text-black font-bold rounded-xl h-9 gap-1.5">
+              <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Nova</span>
+            </Button>
+          </TooltipTrigger><TooltipContent>Abrir Nova Comanda</TooltipContent></Tooltip>
         </div>
       </nav>
 
@@ -401,12 +418,16 @@ const StaffDashboard = () => {
             </button>
           </div>
           <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/10">
-            <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}>
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-            <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}>
-              <List className="w-4 h-4" />
-            </button>
+            <Tooltip><TooltipTrigger asChild>
+              <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}>
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+            </TooltipTrigger><TooltipContent>Visualização em grade</TooltipContent></Tooltip>
+            <Tooltip><TooltipTrigger asChild>
+              <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}>
+                <List className="w-4 h-4" />
+              </button>
+            </TooltipTrigger><TooltipContent>Visualização em lista</TooltipContent></Tooltip>
           </div>
         </div>
 
