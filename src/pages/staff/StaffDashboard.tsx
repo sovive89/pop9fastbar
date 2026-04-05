@@ -603,6 +603,31 @@ const StaffDashboard = () => {
           </Card>
         </div>
       )}
+
+      {/* Scanner Config Modal */}
+      {showScannerConfig && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[#1A1A1A] border-white/10 shadow-2xl animate-in zoom-in-95 duration-200">
+            <CardHeader className="border-b border-white/5 pb-4 flex flex-row items-center justify-between sticky top-0 bg-[#1A1A1A] z-10">
+              <div className="flex items-center gap-3">
+                <div className="bg-[#FF8A00] p-2 rounded-xl">
+                  <Settings className="w-5 h-5 text-black" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg font-black text-white">CONFIGURAR SCANNER</CardTitle>
+                  <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">Câmera, Leitor Externo & Comportamento</p>
+                </div>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setShowScannerConfig(false)} className="text-white/40 hover:text-white">
+                <XCircle className="w-5 h-5" />
+              </Button>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <ScannerConfig compact />
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
