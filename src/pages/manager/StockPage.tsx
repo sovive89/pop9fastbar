@@ -522,8 +522,13 @@ const StockPage = () => {
 
         {/* ===== LEGACY (CARDÁPIO STOCK) TAB ===== */}
         {mainTab === 'legacy' && (
-          <div className="space-y-2">
-            <p className="text-white/30 text-xs mb-2">Estoque direto dos itens do cardápio (sistema anterior)</p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-white/30 text-xs">Estoque direto dos itens do cardápio (sistema anterior)</p>
+              <Button onClick={() => { setMainTab('products'); resetProductForm(); setShowProductForm(true); }} size="sm" className="bg-[#FF8A00] text-black font-bold rounded-xl h-8 gap-1.5 text-xs">
+                <Plus className="w-3.5 h-3.5" /> Novo Produto
+              </Button>
+            </div>
             {menuItems.map(item => {
               const stock = item.stock_quantity ?? -1;
               const isLow = stock !== -1 && stock <= item.stock_alert_threshold && stock > 0;
