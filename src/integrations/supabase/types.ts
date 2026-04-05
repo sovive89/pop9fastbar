@@ -294,6 +294,7 @@ export type Database = {
           id: string
           menu_item_id: string
           notes: string | null
+          produced_at: string | null
           product_id: string
           quantity_used: number
           unit_of_measure: string
@@ -303,6 +304,7 @@ export type Database = {
           id?: string
           menu_item_id: string
           notes?: string | null
+          produced_at?: string | null
           product_id: string
           quantity_used?: number
           unit_of_measure?: string
@@ -312,6 +314,7 @@ export type Database = {
           id?: string
           menu_item_id?: string
           notes?: string | null
+          produced_at?: string | null
           product_id?: string
           quantity_used?: number
           unit_of_measure?: string
@@ -350,6 +353,7 @@ export type Database = {
           name: string
           sku: string | null
           supplier: string | null
+          supplier_id: string | null
           unit_of_measure: string
           updated_at: string | null
         }
@@ -369,6 +373,7 @@ export type Database = {
           name: string
           sku?: string | null
           supplier?: string | null
+          supplier_id?: string | null
           unit_of_measure?: string
           updated_at?: string | null
         }
@@ -388,10 +393,19 @@ export type Database = {
           name?: string
           sku?: string | null
           supplier?: string | null
+          supplier_id?: string | null
           unit_of_measure?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -440,6 +454,69 @@ export type Database = {
           zip_code?: string | null
         }
         Relationships: []
+      }
+      purchase_entries: {
+        Row: {
+          cost_per_unit: number | null
+          cost_total: number
+          created_at: string | null
+          id: string
+          invoice_number: string | null
+          lot_number: string | null
+          notes: string | null
+          performed_by: string | null
+          product_id: string
+          purchase_date: string
+          quantity: number
+          supplier_id: string | null
+          unit_of_measure: string
+        }
+        Insert: {
+          cost_per_unit?: number | null
+          cost_total?: number
+          created_at?: string | null
+          id?: string
+          invoice_number?: string | null
+          lot_number?: string | null
+          notes?: string | null
+          performed_by?: string | null
+          product_id: string
+          purchase_date?: string
+          quantity: number
+          supplier_id?: string | null
+          unit_of_measure?: string
+        }
+        Update: {
+          cost_per_unit?: number | null
+          cost_total?: number
+          created_at?: string | null
+          id?: string
+          invoice_number?: string | null
+          lot_number?: string | null
+          notes?: string | null
+          performed_by?: string | null
+          product_id?: string
+          purchase_date?: string
+          quantity?: number
+          supplier_id?: string | null
+          unit_of_measure?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_entries_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_entries_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       session_clients: {
         Row: {
@@ -549,6 +626,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      suppliers: {
+        Row: {
+          address: string | null
+          city: string | null
+          cnpj: string | null
+          contact_name: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          notes: string | null
+          phone: string | null
+          state: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          cnpj?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          cnpj?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
