@@ -65,6 +65,7 @@ const StaffDashboard = () => {
   const [creating, setCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showScanner, setShowScanner] = useState(false);
+  const [showScannerConfig, setShowScannerConfig] = useState(false);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<'active' | 'closed'>('active');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
