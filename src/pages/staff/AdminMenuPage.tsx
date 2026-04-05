@@ -109,7 +109,7 @@ const AdminMenuPage = () => {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 glass border-b border-border/30">
         <div className="container mx-auto px-4 py-3 flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/gestor/admin')}><ArrowLeft className="w-5 h-5" /></Button>
+          <ManagerSidebarTrigger />
           <h1 className="font-display font-bold text-lg text-foreground flex-1">Cardápio</h1>
           <Button size="sm" onClick={() => { resetForm(); setShowForm(true); }} className="rounded-xl gap-1"><Plus className="w-4 h-4" /> Novo</Button>
         </div>
