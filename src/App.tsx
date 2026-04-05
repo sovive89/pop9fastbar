@@ -19,6 +19,7 @@ import SettingsPage from "./pages/manager/SettingsPage";
 import AdvancedReportsPage from "./pages/manager/AdvancedReportsPage";
 import CRMPage from "./pages/manager/CRMPage";
 import StockPage from "./pages/manager/StockPage";
+import StaffPage from "./pages/manager/StaffPage";
 import ClientHome from "./pages/client/ClientHome";
 import ClientOrder from "./pages/client/ClientOrder";
 import ClientRegistration from "./pages/client/ClientRegistration";
