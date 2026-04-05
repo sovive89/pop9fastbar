@@ -45,7 +45,7 @@ const SettingsPage = () => {
   const { toast } = useToast();
   const { role } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'apis' | 'printers' | 'links'>('apis');
+  const [activeTab, setActiveTab] = useState<'apis' | 'printers' | 'links' | 'scanner'>('apis');
   const [loading, setLoading] = useState(false);
 
   // APIs
