@@ -34,12 +34,21 @@ export function ManagerSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { signOut } = useAuth();
-  const { state } = useSidebar();
+  const { state, setOpen, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === 'collapsed';
 
   const isActive = (url: string, exact?: boolean) => {
     if (exact) return location.pathname === url;
     return location.pathname.startsWith(url);
+  };
+
+  const handleNavigate = (url: string) => {
+    navigate(url);
+    if (isMobile) {
+      setOpenMobile(false);
+    } else {
+      setOpen(false);
+    }
   };
 
   return (
