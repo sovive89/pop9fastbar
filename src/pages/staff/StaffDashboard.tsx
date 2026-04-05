@@ -59,6 +59,7 @@ const StaffDashboard = () => {
   const [showNewSession, setShowNewSession] = useState(false);
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
+  const [clientEmail, setClientEmail] = useState('');
   const [creating, setCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showScanner, setShowScanner] = useState(false);
@@ -162,11 +163,12 @@ const StaffDashboard = () => {
     setCreating(true);
     const { data: session, error } = await supabase.from('sessions').insert({ opened_by: user?.id, status: 'active' }).select().single();
     if (error || !session) { toast({ title: 'Erro ao criar comanda', variant: 'destructive' }); setCreating(false); return; }
-    await supabase.from('session_clients').insert({ session_id: session.id, client_name: clientName.trim(), client_phone: clientPhone.replace(/\D/g, '') });
+    await supabase.from('session_clients').insert({ session_id: session.id, client_name: clientName.trim(), client_phone: clientPhone.replace(/\D/g, ''), client_email: clientEmail.trim() || null });
     toast({ title: 'Comanda aberta!' });
     setShowNewSession(false);
     setClientName('');
     setClientPhone('');
+    setClientEmail('');
     setCreating(false);
     fetchAll();
   };
@@ -558,6 +560,10 @@ const StaffDashboard = () => {
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase text-white/30 tracking-widest">WhatsApp (Opcional)</label>
                 <Input placeholder="(00) 00000-0000" value={clientPhone} onChange={e => setClientPhone(e.target.value)} className="bg-white/5 border-white/10 h-12 rounded-xl text-white focus:ring-[#FF8A00]" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-white/30 tracking-widest">E-mail (Opcional)</label>
+                <Input placeholder="cliente@email.com" type="email" value={clientEmail} onChange={e => setClientEmail(e.target.value)} className="bg-white/5 border-white/10 h-12 rounded-xl text-white focus:ring-[#FF8A00]" />
               </div>
             </CardContent>
             <CardFooter className="flex gap-3 pt-2">
