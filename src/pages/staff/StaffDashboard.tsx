@@ -163,11 +163,12 @@ const StaffDashboard = () => {
     setCreating(true);
     const { data: session, error } = await supabase.from('sessions').insert({ opened_by: user?.id, status: 'active' }).select().single();
     if (error || !session) { toast({ title: 'Erro ao criar comanda', variant: 'destructive' }); setCreating(false); return; }
-    await supabase.from('session_clients').insert({ session_id: session.id, client_name: clientName.trim(), client_phone: clientPhone.replace(/\D/g, '') });
+    await supabase.from('session_clients').insert({ session_id: session.id, client_name: clientName.trim(), client_phone: clientPhone.replace(/\D/g, ''), client_email: clientEmail.trim() || null });
     toast({ title: 'Comanda aberta!' });
     setShowNewSession(false);
     setClientName('');
     setClientPhone('');
+    setClientEmail('');
     setCreating(false);
     fetchAll();
   };
