@@ -188,7 +188,10 @@ const KitchenView = () => {
 
       <header className="sticky top-0 z-50 glass border-b border-border/30">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 className="font-display font-bold text-xl text-foreground">🍳 Cozinha / Balcão</h1>
+          <div className="flex items-center gap-3">
+            <ManagerSidebarTrigger />
+            <h1 className="font-display font-bold text-xl text-foreground">🍳 Cozinha / Balcão</h1>
+          </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={() => setSoundEnabled(!soundEnabled)}>
               {soundEnabled ? <Volume2 className="w-5 h-5 text-primary" /> : <VolumeX className="w-5 h-5 text-muted-foreground" />}
