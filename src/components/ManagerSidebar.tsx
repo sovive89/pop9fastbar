@@ -34,12 +34,21 @@ export function ManagerSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { signOut } = useAuth();
-  const { state } = useSidebar();
+  const { state, setOpen, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === 'collapsed';
 
   const isActive = (url: string, exact?: boolean) => {
     if (exact) return location.pathname === url;
     return location.pathname.startsWith(url);
+  };
+
+  const handleNavigate = (url: string) => {
+    navigate(url);
+    if (isMobile) {
+      setOpenMobile(false);
+    } else {
+      setOpen(false);
+    }
   };
 
   return (
@@ -70,7 +79,7 @@ export function ManagerSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     isActive={isActive(item.url, item.exact)}
-                    onClick={() => navigate(item.url)}
+                    onClick={() => handleNavigate(item.url)}
                     tooltip={item.title}
                     className={`rounded-xl transition-all duration-200 ${
                       isActive(item.url, item.exact)
