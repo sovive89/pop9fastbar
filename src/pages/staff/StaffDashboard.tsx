@@ -376,6 +376,11 @@ const StaffDashboard = () => {
             </Button>
           </TooltipTrigger><TooltipContent>Escanear QR Code</TooltipContent></Tooltip>
           <Tooltip><TooltipTrigger asChild>
+            <Button onClick={() => setShowScannerConfig(true)} variant="outline" size="sm" className="border-white/10 text-white/40 hover:text-white hover:bg-white/10 rounded-xl h-9 w-9 p-0">
+              <Settings className="w-4 h-4" />
+            </Button>
+          </TooltipTrigger><TooltipContent>Configurar Scanner</TooltipContent></Tooltip>
+          <Tooltip><TooltipTrigger asChild>
             <Button onClick={() => setShowNewSession(true)} size="sm" className="bg-[#FF8A00] hover:bg-[#FF8A00]/90 text-black font-bold rounded-xl h-9 gap-1.5">
               <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Nova</span>
             </Button>
