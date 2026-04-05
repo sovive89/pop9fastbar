@@ -4,8 +4,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Settings, Key, Printer, Link as LinkIcon,
-  Copy, Eye, EyeOff, Plus, Trash2, Save, AlertCircle, CheckCircle2
+  Copy, Eye, EyeOff, Plus, Trash2, Save, AlertCircle, CheckCircle2,
+  QrCode
 } from 'lucide-react';
+import ScannerConfig from '@/components/ScannerConfig';
 import { ManagerSidebarTrigger } from '@/components/ManagerSidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,7 +45,7 @@ const SettingsPage = () => {
   const { toast } = useToast();
   const { role } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'apis' | 'printers' | 'links'>('apis');
+  const [activeTab, setActiveTab] = useState<'apis' | 'printers' | 'links' | 'scanner'>('apis');
   const [loading, setLoading] = useState(false);
 
   // APIs
@@ -177,7 +179,7 @@ const SettingsPage = () => {
         <ManagerSidebarTrigger />
         <div>
           <h1 className="text-2xl font-black tracking-tighter">CONFIGURAÇÕES</h1>
-          <p className="text-white/40 text-xs font-bold uppercase tracking-widest">APIs, Impressoras & Links</p>
+          <p className="text-white/40 text-xs font-bold uppercase tracking-widest">APIs, Impressoras, Scanner & Links</p>
         </div>
       </header>
 
@@ -203,6 +205,16 @@ const SettingsPage = () => {
             }`}
           >
             <Printer className="w-4 h-4 inline mr-2" /> Impressoras
+          </button>
+           <button
+            onClick={() => setActiveTab('scanner')}
+            className={`px-6 py-3 rounded-lg font-bold text-sm transition-all ${
+              activeTab === 'scanner'
+                ? 'bg-white/10 text-white'
+                : 'text-white/60 hover:text-white'
+            }`}
+          >
+            <QrCode className="w-4 h-4 inline mr-2" /> Scanner
           </button>
           <button
             onClick={() => setActiveTab('links')}
@@ -346,6 +358,9 @@ const SettingsPage = () => {
             )}
           </div>
         )}
+
+        {/* Scanner Tab */}
+        {activeTab === 'scanner' && <ScannerConfig />}
 
         {/* Links Tab */}
         {activeTab === 'links' && (
