@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Camera, Bluetooth, Usb, Volume2, VolumeX,
   Settings, Zap, CheckCircle2, RotateCcw, Save

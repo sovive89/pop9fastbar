@@ -206,6 +206,16 @@ const SettingsPage = () => {
           >
             <Printer className="w-4 h-4 inline mr-2" /> Impressoras
           </button>
+           <button
+            onClick={() => setActiveTab('scanner')}
+            className={`px-6 py-3 rounded-lg font-bold text-sm transition-all ${
+              activeTab === 'scanner'
+                ? 'bg-white/10 text-white'
+                : 'text-white/60 hover:text-white'
+            }`}
+          >
+            <QrCode className="w-4 h-4 inline mr-2" /> Scanner
+          </button>
           <button
             onClick={() => setActiveTab('links')}
             className={`px-6 py-3 rounded-lg font-bold text-sm transition-all ${
