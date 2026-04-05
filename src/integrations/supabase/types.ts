@@ -241,6 +241,158 @@ export type Database = {
           },
         ]
       }
+      product_movements: {
+        Row: {
+          created_at: string | null
+          id: string
+          lot_number: string | null
+          movement_type: string
+          new_stock: number
+          performed_by: string | null
+          previous_stock: number
+          product_id: string
+          quantity: number
+          reason: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          lot_number?: string | null
+          movement_type: string
+          new_stock: number
+          performed_by?: string | null
+          previous_stock: number
+          product_id: string
+          quantity: number
+          reason?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          lot_number?: string | null
+          movement_type?: string
+          new_stock?: number
+          performed_by?: string | null
+          previous_stock?: number
+          product_id?: string
+          quantity?: number
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      production_recipes: {
+        Row: {
+          created_at: string | null
+          id: string
+          menu_item_id: string
+          notes: string | null
+          product_id: string
+          quantity_used: number
+          unit_of_measure: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          menu_item_id: string
+          notes?: string | null
+          product_id: string
+          quantity_used?: number
+          unit_of_measure?: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          menu_item_id?: string
+          notes?: string | null
+          product_id?: string
+          quantity_used?: number
+          unit_of_measure?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_recipes_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_recipes_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          barcode: string | null
+          brand: string | null
+          category: string | null
+          cost_per_lot: number | null
+          cost_per_unit: number | null
+          created_at: string | null
+          current_stock: number | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          lot_size: number | null
+          min_stock: number | null
+          name: string
+          sku: string | null
+          supplier: string | null
+          unit_of_measure: string
+          updated_at: string | null
+        }
+        Insert: {
+          barcode?: string | null
+          brand?: string | null
+          category?: string | null
+          cost_per_lot?: number | null
+          cost_per_unit?: number | null
+          created_at?: string | null
+          current_stock?: number | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          lot_size?: number | null
+          min_stock?: number | null
+          name: string
+          sku?: string | null
+          supplier?: string | null
+          unit_of_measure?: string
+          updated_at?: string | null
+        }
+        Update: {
+          barcode?: string | null
+          brand?: string | null
+          category?: string | null
+          cost_per_lot?: number | null
+          cost_per_unit?: number | null
+          created_at?: string | null
+          current_stock?: number | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          lot_size?: number | null
+          min_stock?: number | null
+          name?: string
+          sku?: string | null
+          supplier?: string | null
+          unit_of_measure?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null
