@@ -95,11 +95,9 @@ const App = () => {
               </Route>
 
               {/* REDIRECIONAMENTOS PARA COMPATIBILIDADE */}
-              <Route path="/estoque" element={<Navigate to="/estoque" replace />} />
-              <Route path="/staff/*" element={<Navigate to="/" replace />} />
-              <Route path="/abrir" element={<Navigate to="/cliente/abrir" replace />} />
-              <Route path="/order/:sessionId" element={<Navigate to="/cliente/pedido/:sessionId" replace />} />
-              <Route path="/order/:sessionId/:clientToken" element={<Navigate to="/cliente/pedido/:sessionId/:clientToken" replace />} />
+              <Route path="/staff/*" element={<Navigate to="/gestor" replace />} />
+              <Route path="/order/:sessionId" element={<Navigate to={`/pedido/${window.location.pathname.split('/')[2]}`} replace />} />
+              <Route path="/order/:sessionId/:clientToken" element={<Navigate to={`/pedido/${window.location.pathname.split('/')[2]}/${window.location.pathname.split('/')[3]}`} replace />} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
