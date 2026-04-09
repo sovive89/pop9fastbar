@@ -40,7 +40,7 @@ const ClientRegistration = () => {
           .maybeSingle();
 
         if (session?.status === 'active' && savedToken) {
-          navigate(`/cliente/pedido/${urlSessionId}/${savedToken}`, { replace: true });
+          navigate(`/pedido/${urlSessionId}/${savedToken}`, { replace: true });
           return;
         }
       }
@@ -60,13 +60,29 @@ const ClientRegistration = () => {
     setLoading(true);
 
     try {
-      const targetSessionId = urlSessionId;
+      let targetSessionId = urlSessionId;
 
+      // Se não houver sessionId na URL, criar uma nova sessão
       if (!targetSessionId) {
-        throw new Error('Comanda não encontrada. Peça ao atendente para abrir uma comanda.');
+        const { data: newSession, error: sessionError } = await supabase
+          .from('sessions')
+          .insert({
+            status: 'active',
+            opened_at: new Date().toISOString(),
+            table_number: null, // Bar sem mesas
+          })
+          .select('id')
+          .single();
+
+        if (sessionError || !newSession) {
+          console.error('Erro ao criar sessão:', sessionError);
+          throw new Error('Erro ao abrir comanda. Tente novamente.');
+        }
+
+        targetSessionId = newSession.id;
       }
 
-      // Verify session is active
+      // Verificar se a sessão está ativa
       const { data: session } = await supabase
         .from('sessions')
         .select('status')
@@ -77,11 +93,12 @@ const ClientRegistration = () => {
         throw new Error('Esta comanda não está ativa. Peça ao atendente para verificar.');
       }
 
+      // Registrar o cliente na sessão
       const insertData: any = {
         session_id: targetSessionId,
         client_name: name.trim(),
         client_phone: phoneDigits,
-        email: email.trim() || null,
+        client_email: email.trim() || null,
       };
 
       const { data: client, error: clientError } = await supabase
@@ -97,18 +114,21 @@ const ClientRegistration = () => {
 
       localStorage.setItem(`client_token_${targetSessionId}`, client.client_token);
       
-      toast({ 
-        title: 'Comanda aberta!', 
-        description: `Bem-vindo, ${name.split(' ')[0]}!`,
+      toast({
+        title: 'Comanda aberta!',
+        description: `Bem-vindo, ${name}! Você pode começar a fazer seus pedidos.`,
       });
 
-      navigate(`/cliente/pedido/${targetSessionId}/${client.client_token}`, { replace: true });
+      // Redirecionar para o cardápio
+      navigate(`/pedido/${targetSessionId}/${client.client_token}`, { replace: true });
     } catch (error: any) {
-      toast({ 
-        title: 'Erro no cadastro', 
-        description: error.message || 'Tente novamente.', 
-        variant: 'destructive' 
+      console.error('Erro no cadastro:', error);
+      toast({
+        title: 'Erro no cadastro',
+        description: error.message || 'Algo deu errado. Tente novamente.',
+        variant: 'destructive',
       });
+    } finally {
       setLoading(false);
     }
   };
@@ -116,121 +136,95 @@ const ClientRegistration = () => {
   if (checking) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0F0F0F] relative overflow-hidden flex flex-col items-center justify-center px-6 py-12 text-white">
-      <div className="absolute inset-0">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full" style={{ background: 'radial-gradient(circle, hsl(38 92% 50% / 0.08) 0%, transparent 70%)' }} />
-      </div>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <img src={pop9Logo} alt="PØP9 BAR" className="w-16 h-16 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-foreground mb-2">Abra sua Comanda</h1>
+          <p className="text-muted-foreground">Insira seus dados para começar</p>
+        </div>
 
-      <div className="relative z-10 w-full max-w-sm space-y-10">
-        {/* Logo & Welcome */}
-        <div className="text-center space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <img 
-            src={pop9Logo} 
-            alt="POP9 BAR" 
-            className="w-32 h-auto mx-auto object-contain" 
-            width={512} height={512}
-            style={{ mixBlendMode: 'lighten', filter: 'drop-shadow(0 0 15px hsl(38 92% 50% / 0.3))' }} 
-          />
-          <div className="space-y-2">
-            <div className="h-1 w-12 bg-[#FF8A00] mx-auto rounded-full" />
-            <p className="text-base text-white/60 font-medium uppercase tracking-widest">
-              Abra sua Comanda 🍻
-            </p>
-            <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">
-              Preencha seus dados para começar a pedir.
-            </p>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Nome */}
+          <div>
+            <label className="block text-sm font-medium text-muted-foreground mb-2">NOME</label>
+            <div className="relative">
+              <User className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Seu nome"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="pl-10 bg-secondary border-secondary text-foreground placeholder:text-muted-foreground"
+                disabled={loading}
+              />
+            </div>
+            {name && !nameValid && (
+              <p className="text-xs text-destructive mt-1">Mínimo 2 caracteres</p>
+            )}
           </div>
-        </div>
 
-        {/* Form Card */}
-        <div className="bg-[#1A1A1A] p-8 rounded-[2.5rem] border border-white/5 shadow-2xl animate-in fade-in zoom-in-95 duration-500 delay-200">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">
-                Nome
-              </label>
-              <div className="relative group">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-[#FF8A00] transition-colors" />
-                <Input
-                  placeholder="Nome e sobrenome"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  className="pl-12 h-14 rounded-2xl bg-white/5 border-white/10 focus:bg-white/10 transition-all text-base text-white"
-                  autoFocus
-                  required
-                />
-              </div>
-              {name.length > 0 && !nameValid && (
-                <p className="text-[10px] text-red-400 ml-1">Nome deve ter no mínimo 2 caracteres</p>
-              )}
+          {/* Celular */}
+          <div>
+            <label className="block text-sm font-medium text-muted-foreground mb-2">WHATSAPP / CELULAR</label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
+              <Input
+                type="tel"
+                placeholder="(XX) XXXXX-XXXX"
+                value={phone}
+                onChange={(e) => setPhone(formatPhoneBR(e.target.value))}
+                className="pl-10 bg-secondary border-secondary text-foreground placeholder:text-muted-foreground"
+                disabled={loading}
+              />
             </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">
-                WhatsApp / Celular
-              </label>
-              <div className="relative group">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-[#FF8A00] transition-colors" />
-                <Input
-                  placeholder="(00) 00000-0000"
-                  value={phone}
-                  onChange={e => setPhone(formatPhoneBR(e.target.value))}
-                  className="pl-12 h-14 rounded-2xl bg-white/5 border-white/10 focus:bg-white/10 transition-all text-base text-white"
-                  inputMode="tel"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">
-                E-mail <span className="text-white/15">(opcional)</span>
-              </label>
-              <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-[#FF8A00] transition-colors" />
-                <Input
-                  placeholder="seu@email.com"
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className="pl-12 h-14 rounded-2xl bg-white/5 border-white/10 focus:bg-white/10 transition-all text-base text-white"
-                />
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              disabled={!isValid || loading}
-              className="w-full h-14 rounded-2xl text-lg font-black bg-[#FF8A00] text-black hover:bg-[#FF8A00]/90 gap-3 mt-4 shadow-lg shadow-[#FF8A00]/10 active:scale-[0.98] transition-transform"
-            >
-              {loading ? (
-                <div className="w-6 h-6 border-3 border-black border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <>
-                  Abrir Comanda
-                  <ArrowRight className="w-6 h-6" />
-                </>
-              )}
-            </Button>
-          </form>
-        </div>
-
-        <div className="text-center space-y-4 animate-in fade-in duration-1000 delay-500">
-          <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest leading-relaxed px-4">
-            Ao abrir sua comanda, você concorda com os termos de uso. Seus dados estão seguros.
-          </p>
-          <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-white/10 uppercase tracking-tighter">
-            <div className="w-8 h-[1px] bg-white/5" />
-            PØP9 BAR - GESTÃO INTELIGENTE
-            <div className="w-8 h-[1px] bg-white/5" />
+            {phone && phoneDigits.length !== 11 && (
+              <p className="text-xs text-destructive mt-1">Celular inválido</p>
+            )}
           </div>
-        </div>
+
+          {/* E-mail */}
+          <div>
+            <label className="block text-sm font-medium text-muted-foreground mb-2">E-MAIL (OPCIONAL)</label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
+              <Input
+                type="email"
+                placeholder="seu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pl-10 bg-secondary border-secondary text-foreground placeholder:text-muted-foreground"
+                disabled={loading}
+              />
+            </div>
+            {email && (
+              <p className="text-xs text-primary mt-1">✓ Você ganhará 5% de desconto na primeira visita!</p>
+            )}
+          </div>
+
+          {/* Botão Abrir Comanda */}
+          <Button
+            type="submit"
+            disabled={!isValid || loading}
+            className="w-full bg-orange-500 hover:bg-orange-600 text-black font-bold py-6 text-lg"
+          >
+            {loading ? 'Abrindo...' : 'Abrir Comanda'} <ArrowRight className="ml-2 w-5 h-5" />
+          </Button>
+        </form>
+
+        {/* Disclaimer */}
+        <p className="text-xs text-muted-foreground text-center mt-8">
+          AO ABRIR SUA COMANDA, VOCÊ CONCORDA COM OS TERMOS DE USO. SEUS DADOS ESTÃO SEGUROS.
+        </p>
+        <p className="text-xs text-muted-foreground text-center mt-2">
+          PØP9 BAR - GESTÃO INTELIGENTE
+        </p>
       </div>
     </div>
   );
